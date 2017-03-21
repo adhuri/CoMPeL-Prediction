@@ -41,7 +41,9 @@ func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []flo
 	transformedArray := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))))
 	fmt.Println("Transformed array: ", transformedArray)
 
-	predictedArray = pastArray
+	invertedArray := Inverse_haar(transformedArray)
+
+	predictedArray = invertedArray
 	return
 }
 

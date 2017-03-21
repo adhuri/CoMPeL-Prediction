@@ -80,9 +80,15 @@ func Haar(f []float32, scale int) [][]float32 {
 
 		/// Predicted States
 		predictedArray := predictMarkov(stateArrayD, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
-		fmt.Println("Predicted array is ", predictedArray)
+		fmt.Println("Predicted array of D is ", predictedArray)
 
 		/// Convert States back to Avg between the gaps
+		predictedActualD := convertStatesToValues(predictedArray, scaleMap[scaleNum])
+		fmt.Println("Predicted Actual array of D is ", predictedActualD)
+
+		res = append([][]float32{predictedActualD}, res...) // prepend
+
+		//res = append([][]float32{D}, res...) // prepend
 
 		if scaleNum == scale {
 			stateDeciderA := make([]float32, numStates+1)
@@ -102,13 +108,40 @@ func Haar(f []float32, scale int) [][]float32 {
 			}
 			fmt.Println("State decider of A is: ", stateDeciderA)
 			fmt.Println("State array of A in the last scale is: ", stateArrayA)
+
+			/// Predicted States
+			predictedArrayA := predictMarkov(stateArrayA, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
+			fmt.Println("Predicted array of A is ", predictedArrayA)
+
+			/// Convert States back to Avg between the gaps
+			predictedActualA := convertStatesToValues(predictedArrayA, scaleMap[scaleNum])
+			fmt.Println("Predicted Actual array of A is ", predictedActualA)
+
+			res = append([][]float32{predictedActualA}, res...) // prepend
+
 		}
 
-		// res = append([][]float32{D}, res...) // prepend
 		scaleNum++
 	}
 	// res = append([][]float32{A}, res...) // prepend
 	return res
+}
+
+// Converts States to values by converting int array to float32 array taking average between gaps
+func convertStatesToValues(predictedArray []int, minMaxDiff []float32) []float32 {
+	convertedArray := make([]float32, len(predictedArray))
+	if len(minMaxDiff) != 3 {
+		fmt.Println("Warn: Looks some issue in convertStatesToValues")
+	}
+	low := minMaxDiff[0]
+	//max := minMaxDiff[1]
+	diff := minMaxDiff[2]
+
+	for i, el := range predictedArray {
+		localLow := low + (float32(el-1) * diff)
+		convertedArray[i] = float32(localLow + (diff / 2))
+	}
+	return convertedArray
 }
 
 /// Find the state by doing binary search on state decider
@@ -168,8 +201,8 @@ func findMinMax(arr []float32) (float32, float32) {
 	return min, max
 }
 
-func inverse_haar_level(a []float64, d []float64) (res []float64) {
-	var base float64 = 1.0 / math.Pow(2, 0.5)
+func inverse_haar_level(a []float32, d []float32) (res []float32) {
+	base := float32(1.0 / math.Pow(2, 0.5))
 	for i := 0; i < len(a); i++ {
 		res = append(res, base*(a[i]+d[i]))
 		res = append(res, base*(a[i]-d[i]))
@@ -177,7 +210,7 @@ func inverse_haar_level(a []float64, d []float64) (res []float64) {
 	return
 }
 
-func inverse_haar(h [][]float64) (an []float64) {
+func Inverse_haar(h [][]float32) (an []float32) {
 	an = h[0]
 	for i := 1; i < len(h); i++ {
 		an = inverse_haar_level(an, h[i])
