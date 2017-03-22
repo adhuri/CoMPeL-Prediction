@@ -42,7 +42,18 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 		}
 
 	}
-	results := make([]int, predictionWindow)
+	var results []int // Declaring
+
+	//Initializing
+	if predictionWindow == 0 {
+		results = make([]int, 1)
+		lastElement := arr[len(arr)-1]
+		results[0] = predictNext(lastElement, p, 0)
+
+	} else {
+		results = make([]int, predictionWindow)
+	}
+
 	lastElement := arr[len(arr)-1]
 	for i := 0; i < predictionWindow; i++ {
 		results[i] = predictNext(lastElement, p, predictionWindow)
@@ -55,15 +66,18 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 }
 
 func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
+
 	var maxIndices = make([]int, D)
 	max := transitionMatrix[lastElement][0]
+
 	for _, elem := range transitionMatrix[lastElement] {
 		if elem > max {
 			max = elem
 		}
 	}
 	/// Special case all zeros
-	if max == 0 {
+	if D == 0 || max == 0 {
+		//fmt.Print("\n-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``---D is possibily 0 ----- \n")
 		return random(1, len(transitionMatrix[0]))
 	}
 

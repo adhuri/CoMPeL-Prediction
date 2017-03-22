@@ -49,7 +49,10 @@ func Haar(f []float32, scale int) [][]float32 {
 		A, D = haar_level(A)
 		fmt.Print("\n Haar Level - ", scaleNum, "---", A, "--", D, "\n")
 
-		numStates := 10
+		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
+
+		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
+		numStates := 12
 		stateDeciderD := make([]float32, numStates+1)
 
 		/// Find min, max
@@ -91,6 +94,7 @@ func Haar(f []float32, scale int) [][]float32 {
 		//res = append([][]float32{D}, res...) // prepend
 
 		if scaleNum == scale {
+			fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
 			stateDeciderA := make([]float32, numStates+1)
 			stateArrayA := make([]int, len(A))
 			minA, maxA := findMinMax(A)
@@ -110,11 +114,15 @@ func Haar(f []float32, scale int) [][]float32 {
 			fmt.Println("State array of A in the last scale is: ", stateArrayA)
 
 			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
+			predictedArrayA := predictMarkov(stateArrayA, numStates, 0)
+			//float64(scale-scaleNum))))
 			fmt.Println("Predicted array of A is ", predictedArrayA)
 
+			// Min Max A
+			scaleMapA := []float32{minA, maxA, diffA}
+
 			/// Convert States back to Avg between the gaps
-			predictedActualA := convertStatesToValues(predictedArrayA, scaleMap[scaleNum])
+			predictedActualA := convertStatesToValues(predictedArrayA, scaleMapA)
 			fmt.Println("Predicted Actual array of A is ", predictedActualA)
 
 			res = append([][]float32{predictedActualA}, res...) // prepend
@@ -127,6 +135,16 @@ func Haar(f []float32, scale int) [][]float32 {
 	return res
 }
 
+/*
+// Converts coefficients to timeseries
+func convertHaarCoeeficientToTimeSeries(pastArray, ACoefficient, DCoefficient []float32) (A, D []float32) {
+
+	numOfCoefficients := len(D)
+	numOfTimeSeriesPoints := len(pastArray)
+
+	return
+}
+*/
 // Converts States to values by converting int array to float32 array taking average between gaps
 func convertStatesToValues(predictedArray []int, minMaxDiff []float32) []float32 {
 	convertedArray := make([]float32, len(predictedArray))
