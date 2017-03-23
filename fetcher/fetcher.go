@@ -1,4 +1,4 @@
-package main
+package fetcher
 
 import (
 	"encoding/json"
@@ -129,7 +129,7 @@ func GetData(agentIp string, containerId string, metric string) []DataPoint {
 		log.Fatal(err)
 	}
 
-	q := fmt.Sprintf("select %s from container_data where agent = '%s' and container = '%s' ORDER BY time DESC LIMIT 3", metric, agentIp, containerId)
+	q := fmt.Sprintf("select %s from container_data where agent = '%s' and container = '%s' ORDER BY time DESC LIMIT 20", metric, agentIp, containerId)
 
 	res, err := queryDB(c, q)
 	if err != nil {
