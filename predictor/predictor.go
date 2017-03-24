@@ -43,23 +43,29 @@ func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []flo
 
 	if !isPowerOfTwo(haar.SlidingWindow) {
 		fmt.Println("Sliding window size configured ", haar.SlidingWindow)
-		return pastArray, errors.New("  Sliding number has to be power of 2 for Haar Wavelet")
+		return predictedArray, errors.New("  Sliding number has to be power of 2 for Haar Wavelet")
+	}
+	// Ignore the
+	if len(pastArray) < haar.SlidingWindow {
+		fmt.Println("No Prediction - Length of past array is smaller than Sliding Window ", len(pastArray))
+		return
 	}
 	//Trim additional elements
 	if len(pastArray) > haar.SlidingWindow {
-		fmt.Print("Length of pastarray is larger than Sliding Window")
+		fmt.Println("Length of pastarray is larger than Sliding Window - Trimming ")
 		pastArray = append(pastArray[:haar.SlidingWindow])
 	}
 
-	transformedArray := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))))
-	fmt.Println("Transformed array: ", transformedArray)
+	predictedCoefficients := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))))
 
-	invertedArray := Inverse_haar(transformedArray)
+	fmt.Println("Predicted coefficients array: ", predictedCoefficients)
+
+	invertedArray := Inverse_haar(predictedCoefficients)
 	predictedArray = invertedArray
 	return
 }
 
-//Predictions are not accurate and for near zero values could predict negative Values. Fixing them to zero
+//Prediction is not accurate and for near zero values could predict negative Values. Fixing them to zero
 // All it means is the value approaches zero
 func negativeValuesFixer(result []float32) {
 	fixedCount := 0
@@ -69,7 +75,7 @@ func negativeValuesFixer(result []float32) {
 			fixedCount += 1
 		}
 	}
-	fmt.Println("Fixed values in predicted array ", fixedCount)
+	fmt.Println("Fixed negative values in predicted array ", fixedCount)
 }
 
 // Utility function to check if number is power of two

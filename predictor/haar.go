@@ -5,33 +5,6 @@ import (
 	"math"
 )
 
-func haar_level(f []float32) (a []float32, d []float32) {
-	base := float32(1.0 / math.Pow(2, 0.5))
-	var n int = len(f) / 2
-	for i := 0; i < n; i++ {
-		a = append(a, base*(f[2*i]+f[2*i+1]))
-		d = append(d, base*(f[2*i]-f[2*i+1]))
-	}
-	return
-}
-
-// func haar2(f []float64) [][]float64 {
-// 	n := int(math.Log2(float64(len(f))))
-// 	fmt.Println("n ", n)
-// 	m := int(math.Pow(2, float64(n)))
-// 	var A []float64 = f[:m]
-// 	var res [][]float64
-// 	for len(A) > 1 {
-// 		var D []float64
-// 		A, D = haar_level(A)
-// 		fmt.Print("\n Haar Level - ", A, "--", D, "\n")
-// 		res = append([][]float64{D}, res...) // prepend
-// 	}
-// 	res = append([][]float64{A}, res...) // prepend
-// 	return res
-// }
-
-// Haar ...
 func Haar(f []float32, scale int) [][]float32 {
 
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
@@ -52,7 +25,7 @@ func Haar(f []float32, scale int) [][]float32 {
 		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
 
 		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
-		numStates := 10
+		numStates := 12
 		stateDeciderD := make([]float32, numStates+1)
 
 		/// Find min, max
@@ -135,6 +108,17 @@ func Haar(f []float32, scale int) [][]float32 {
 	// res = append([][]float32{A}, res...) // prepend
 
 	return res
+}
+
+//To find haar Approximate and detailed coefficients for each level
+func haar_level(f []float32) (a []float32, d []float32) {
+	base := float32(1.0 / math.Pow(2, 0.5))
+	var n int = len(f) / 2
+	for i := 0; i < n; i++ {
+		a = append(a, base*(f[2*i]+f[2*i+1]))
+		d = append(d, base*(f[2*i]-f[2*i+1]))
+	}
+	return
 }
 
 // Haar ...
