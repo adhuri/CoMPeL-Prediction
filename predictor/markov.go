@@ -17,8 +17,10 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 
 	n := len(arr)
 
-	fmt.Print(arr, "\n")
-	fmt.Print(n, "\n")
+	if debug {
+		fmt.Print(arr, "\n")
+		fmt.Print(n, "\n")
+	}
 
 	var p [][]float32
 	for i := 0; i <= numStates; i++ {
@@ -86,9 +88,8 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 
 	for i, elem := range transitionMatrix[lastElement] {
 		if elem == max {
-
 			maxIndices = append(maxIndices, i)
-			fmt.Println(len(maxIndices), "....")
+
 		}
 	}
 
@@ -102,7 +103,6 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 
 func random(min, max int) int {
 
-	debug := true
 	if !debug {
 		//Use rand.Seed() when in production for vvariable output
 		rand.Seed(time.Now().Unix())

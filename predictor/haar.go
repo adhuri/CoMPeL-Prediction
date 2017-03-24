@@ -5,22 +5,24 @@ import (
 	"math"
 )
 
-func Haar(f []float32, scale int) [][]float32 {
+var debug = false
+
+// Haar ...  pastArray , scale is , logic numbers
+func Haar(pastArray []float32, scale int, logic int) [][]float32 {
 
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
 	scaleMap := make(map[int][]float32)
 
-	n := int(math.Log2(float64(len(f))))
-	fmt.Println("n ", n)
-	m := int(math.Pow(2, float64(n)))
-	var A []float32 = f[:m]
+	var ApproximateCoefficient []float32 = pastArray[:]
 	var res [][]float32
 	scaleNum := 1
 
-	for len(A) > 1 && scaleNum <= scale {
-		var D []float32
-		A, D = haar_level(A)
-		fmt.Print("\n Haar Level - ", scaleNum, "---", A, "--", D, "\n")
+	for len(ApproximateCoefficient) > 1 && scaleNum <= scale {
+		var DetailedCoefficent []float32
+		ApproximateCoefficient, DetailedCoefficent = haar_level(ApproximateCoefficient)
+		if debug {
+			fmt.Print("\n Haar Level ", scaleNum, "\t | \t", ApproximateCoefficient, "\t | \t", DetailedCoefficent, "\n")
+		}
 
 		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
 
@@ -29,7 +31,7 @@ func Haar(f []float32, scale int) [][]float32 {
 		stateDeciderD := make([]float32, numStates+1)
 
 		/// Find min, max
-		minD, maxD := findMinMax(D)
+		minD, maxD := findMinMax(DetailedCoefficent)
 		diffD := (maxD - minD) / float32(numStates)
 
 		/// Add to map
@@ -44,35 +46,47 @@ func Haar(f []float32, scale int) [][]float32 {
 			stateDeciderD[i] = stateDeciderD[i-1] + diffD
 		}
 
-		fmt.Println("State decider is: ", stateDeciderD)
+		if debug {
+			fmt.Println("State decider is: ", stateDeciderD)
+		}
 
 		/// Original array D transformed to state array containing the state numbers
-		stateArrayD := make([]int, len(D))
+		stateArrayD := make([]int, len(DetailedCoefficent))
 
-		for index, elem := range D {
+		for index, elem := range DetailedCoefficent {
 			stateArrayD[index] = findState(elem, stateDeciderD)
 		}
 
-		fmt.Println("State array of D is: ", stateArrayD)
+		if debug {
+			fmt.Println("State array of D is: ", stateArrayD)
+		}
 
 		/// Predicted States
 		predictedArray := predictMarkov(stateArrayD, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
-		fmt.Println("Predicted array of D is ", predictedArray)
+		if debug {
+			fmt.Println("Predicted array of D is ", predictedArray)
+		}
 
 		/// Convert States back to Avg between the gaps
 		predictedActualD := convertStatesToValues(predictedArray, scaleMap[scaleNum])
-		fmt.Println("Predicted Actual array of D is ", predictedActualD)
+		if debug {
+			fmt.Println("Predicted Actual array of D is ", predictedActualD)
+		}
 
 		res = append([][]float32{predictedActualD}, res...) // prepend
 
 		//res = append([][]float32{D}, res...) // prepend
 
 		if scaleNum == scale {
-			fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
+			if debug {
+				fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
+			}
 			stateDeciderA := make([]float32, numStates+1)
-			stateArrayA := make([]int, len(A))
-			minA, maxA := findMinMax(A)
-			fmt.Println("Min max A ", minA, ",", maxA)
+			stateArrayA := make([]int, len(ApproximateCoefficient))
+			minA, maxA := findMinMax(ApproximateCoefficient)
+			if debug {
+				fmt.Println("Min max A ", minA, ",", maxA)
+			}
 			diffA := (maxA - minA) / float32(numStates)
 			// index = 0
 
@@ -81,23 +95,29 @@ func Haar(f []float32, scale int) [][]float32 {
 			for i := 1; i < numStates; i++ {
 				stateDeciderA[i] = stateDeciderA[i-1] + diffA
 			}
-			for index, elem := range A {
+			for index, elem := range ApproximateCoefficient {
 				stateArrayA[index] = findState(elem, stateDeciderA)
 			}
-			fmt.Println("State decider of A is: ", stateDeciderA)
-			fmt.Println("State array of A in the last scale is: ", stateArrayA)
+			if debug {
+				fmt.Println("State decider of A is: ", stateDeciderA)
+				fmt.Println("State array of A in the last scale is: ", stateArrayA)
+			}
 
 			/// Predicted States
 			predictedArrayA := predictMarkov(stateArrayA, numStates, 0)
 			//float64(scale-scaleNum))))
-			fmt.Println("Predicted array of A is ", predictedArrayA)
+			if debug {
+				fmt.Println("Predicted array of A is ", predictedArrayA)
+			}
 
 			// Min Max A
 			scaleMapA := []float32{minA, maxA, diffA}
 
 			/// Convert States back to Avg between the gaps
 			predictedActualA := convertStatesToValues(predictedArrayA, scaleMapA)
-			fmt.Println("Predicted Actual array of A is ", predictedActualA)
+			if debug {
+				fmt.Println("Predicted Actual array of A is ", predictedActualA)
+			}
 
 			res = append([][]float32{predictedActualA}, res...) // prepend
 
