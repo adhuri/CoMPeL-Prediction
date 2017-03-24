@@ -12,7 +12,7 @@ func main() {
 	W := 64   //PredictionWindow
 
 	// Logic to start prediction
-	fmt.Print("Prediction started\n")
+
 	haar := predictor.WaveletTransform{SlidingWindow: D, PredictionWindow: W}
 
 	// replace fetchedData with fetched Data from db
@@ -20,8 +20,8 @@ func main() {
 
 	predictedArray, err := predictor.Predictor(&haar, fetchedData)
 	if err != nil {
-		fmt.Print("\nError received from Predictor ", err)
+		fmt.Println("Error received from Predictor ", err)
+	} else {
+		fmt.Println("\nPredicted Array ", predictedArray)
 	}
-	fmt.Print("\nPredicted Array ", predictedArray, "\n")
-
 }

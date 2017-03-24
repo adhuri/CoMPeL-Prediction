@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-//Predictor Interface for any
+//Predictor Interface for any predictor
 type PredictionLogic interface {
 	GetPredictorName() string
 	Predict(pastArray []float32) (predictedArray []float32, s error)
@@ -20,16 +20,30 @@ type WaveletTransform struct {
 
 }
 
+// Predictor Funcion to predict which takes input Prediction Logic
+func Predictor(p PredictionLogic, pastArray []float32) (predictedArray []float32, err error) {
+	fmt.Println("Predictor Name : ", p.GetPredictorName())
+	predictedArray, err = p.Predict(pastArray)
+	if err != nil {
+		return
+	}
+	negativeValuesFixer(predictedArray[:])
+
+	return
+}
+
 func (haar *WaveletTransform) GetPredictorName() string {
 	return "Haar Wavelet Transform"
 }
-func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []float32, err error) {
 
-	fmt.Print("\nSliding Window size ", haar.SlidingWindow)
+//Used to Predict WaveletTransform
+func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []float32, err error) {
 	// Check the Sliding windowsize
 	//if even continue
-	if (haar.SlidingWindow)%2 != 0 {
-		return pastArray, errors.New("\nSlidingWindow has to be an even number for Haar - Given :" + string(haar.SlidingWindow) + "\n")
+
+	if !isPowerOfTwo(haar.SlidingWindow) {
+		fmt.Println("Sliding window size configured ", haar.SlidingWindow)
+		return pastArray, errors.New("  Sliding number has to be power of 2 for Haar Wavelet")
 	}
 	//Trim additional elements
 	if len(pastArray) > haar.SlidingWindow {
@@ -45,15 +59,6 @@ func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []flo
 	return
 }
 
-// Predictor Funtion to predict which takes input Prediction Logic
-func Predictor(p PredictionLogic, pastArray []float32) (predictedArray []float32, s error) {
-	fmt.Print(p.GetPredictorName())
-	predictedArray, s = p.Predict(pastArray)
-	negativeValuesFixer(predictedArray[:])
-
-	return
-}
-
 //Predictions are not accurate and for near zero values could predict negative Values. Fixing them to zero
 // All it means is the value approaches zero
 func negativeValuesFixer(result []float32) {
@@ -65,4 +70,15 @@ func negativeValuesFixer(result []float32) {
 		}
 	}
 	fmt.Println("Fixed values in predicted array ", fixedCount)
+}
+
+// Utility function to check if number is power of two
+func isPowerOfTwo(num int) bool {
+	for num >= 2 {
+		if num%2 != 0 {
+			return false
+		}
+		num = num / 2
+	}
+	return num == 1
 }
