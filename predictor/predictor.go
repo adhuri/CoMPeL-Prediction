@@ -26,7 +26,6 @@ func (haar *WaveletTransform) GetPredictorName() string {
 func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []float32, err error) {
 
 	fmt.Print("\nSliding Window size ", haar.SlidingWindow)
-	//a := [6]float32{2, 3, 5, 7, 11, 13}
 	// Check the Sliding windowsize
 	//if even continue
 	if (haar.SlidingWindow)%2 != 0 {
@@ -42,13 +41,28 @@ func (haar *WaveletTransform) Predict(pastArray []float32) (predictedArray []flo
 	fmt.Println("Transformed array: ", transformedArray)
 
 	invertedArray := Inverse_haar(transformedArray)
-
 	predictedArray = invertedArray
 	return
 }
 
+// Predictor Funtion to predict which takes input Prediction Logic
 func Predictor(p PredictionLogic, pastArray []float32) (predictedArray []float32, s error) {
 	fmt.Print(p.GetPredictorName())
 	predictedArray, s = p.Predict(pastArray)
+	negativeValuesFixer(predictedArray[:])
+
 	return
+}
+
+//Predictions are not accurate and for near zero values could predict negative Values. Fixing them to zero
+// All it means is the value approaches zero
+func negativeValuesFixer(result []float32) {
+	fixedCount := 0
+	for i, el := range result {
+		if el < 0 {
+			result[i] = 0
+			fixedCount += 1
+		}
+	}
+	fmt.Println("Fixed values in predicted array ", fixedCount)
 }

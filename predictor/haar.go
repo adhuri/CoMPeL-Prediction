@@ -132,6 +132,7 @@ func Haar(f []float32, scale int) [][]float32 {
 		scaleNum++
 	}
 	// res = append([][]float32{A}, res...) // prepend
+
 	return res
 }
 

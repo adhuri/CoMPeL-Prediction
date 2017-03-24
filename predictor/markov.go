@@ -98,7 +98,13 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 // }
 
 func random(min, max int) int {
-	rand.Seed(time.Now().Unix())
+
+	debug := true
+	if !debug {
+		//Use rand.Seed() when in production for vvariable output
+		rand.Seed(time.Now().Unix())
+	}
+
 	return rand.Intn(max-min) + min
 }
 
