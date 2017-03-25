@@ -16,7 +16,7 @@ const (
 	password = "bumblebeetuna"
 )
 
-func GetConnection() influx.Client {
+func getConnection() influx.Client {
 
 	// Create a new HTTPClient
 	conn, err := influx.NewHTTPClient(influx.HTTPConfig{
@@ -49,7 +49,7 @@ func queryDB(clnt influx.Client, cmd string) (res []influx.Result, err error) {
 	return res, nil
 }
 
-func GetData(agentIp string, containerId string, metric string) []DataPoint {
+func getData(agentIp string, containerId string, metric string) []DataPoint {
 
 	c, err := influx.NewHTTPClient(influx.HTTPConfig{
 		Addr:     "http://localhost:10090",
@@ -105,4 +105,40 @@ func GetData(agentIp string, containerId string, metric string) []DataPoint {
 		}
 	}
 	return dataPoints
+}
+
+func saveData(dataPoints []DataPoint, conn influx.Client) {
+	// Create a new point batch
+	bp, err := influx.NewBatchPoints(influx.BatchPointsConfig{
+		Database:  MyDB,
+		Precision: "s",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, dataPoint := range dataPoints {
+		tags := map[string]string{
+			"agent":     dataPoint.AgentIp,
+			"container": dataPoint.ContainerId,
+			"metric":    dataPoint.MetricType,
+		}
+		fields := map[string]interface{}{
+			"value": dataPoint.Value,
+		}
+
+		tm := time.Unix(dataPoint.Timestamp, 0)
+
+		pt, err := influx.NewPoint("predicted_container_data", tags, fields, tm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bp.AddPoint(pt)
+
+		// Write the batch
+		if err := conn.Write(bp); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }

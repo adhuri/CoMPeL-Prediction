@@ -3,9 +3,11 @@ package fetcher
 import "fmt"
 
 type DataPoint struct {
-	Timestamp  int64
-	Value      float32
-	MetricType string
+	AgentIp     string
+	ContainerId string
+	Timestamp   int64
+	Value       float32
+	MetricType  string
 }
 
 func GetAgentInformation() {
@@ -14,7 +16,7 @@ func GetAgentInformation() {
 
 func GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
 
-	dataPoints := GetData(agentIp, containerId, metricType)
+	dataPoints := getData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
 
 	var latestTimesStamp int64
@@ -113,5 +115,24 @@ func FillMissingValues(points []float32) {
 			points[j] = points[previousNonZeroIndex]
 		}
 	}
+
+}
+
+func SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+	var dataPoints []DataPoint
+	for _, value := range predictedValues {
+		startTimeStamp += 1
+		point := DataPoint{
+			AgentIp:     agentIP,
+			ContainerId: containerId,
+			Value:       value,
+			Timestamp:   startTimeStamp,
+			MetricType:  metric,
+		}
+		dataPoints = append(dataPoints, point)
+	}
+
+	conn := getConnection()
+	saveData(dataPoints, conn)
 
 }
