@@ -10,6 +10,12 @@ type DataFetcher struct {
 	dataCache Cache
 }
 
+func NewDataFetcher() *DataFetcher {
+	return &DataFetcher{
+		dataCache: Cache{},
+	}
+}
+
 func (dataFetcher *DataFetcher) GetAgentInformation() {
 
 }
@@ -109,7 +115,8 @@ func fillMissingValues(points []float32) {
 
 }
 
-func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) error {
+
 	var dataPoints []DataPoint
 	for _, value := range predictedValues {
 		startTimeStamp += 1
@@ -124,8 +131,12 @@ func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId st
 	}
 
 	conn := getConnection()
-	saveData(dataPoints, conn)
+	err := saveData(dataPoints, conn)
+	if err != nil {
+		return err
+	}
 
 	conn.Close()
+	return nil
 
 }

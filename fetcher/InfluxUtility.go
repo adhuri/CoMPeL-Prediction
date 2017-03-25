@@ -107,7 +107,7 @@ func getData(agentIp string, containerId string, metric string) []DataPoint {
 	return dataPoints
 }
 
-func saveData(dataPoints []DataPoint, conn influx.Client) {
+func saveData(dataPoints []DataPoint, conn influx.Client) error {
 	// Create a new point batch
 	bp, err := influx.NewBatchPoints(influx.BatchPointsConfig{
 		Database:  MyDB,
@@ -137,8 +137,10 @@ func saveData(dataPoints []DataPoint, conn influx.Client) {
 
 		// Write the batch
 		if err := conn.Write(bp); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+
+	return nil
 
 }
