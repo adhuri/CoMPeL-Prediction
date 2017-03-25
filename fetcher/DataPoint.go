@@ -92,13 +92,3 @@ func FillMissingValues(points []float32) {
 	}
 
 }
-
-// func main() {
-//
-// 	// primes := [17]float32{1.0, -1.0, 3.0, -1.0, 5.0, 0.0, 7.0, -1.0, -1.0, -1.0, -1.0, 11.0, -1.0, 13.0, -1.0, -1.0, -1.0}
-// 	// fmt.Println(primes)
-// 	// FillMissingValues(primes[0:])
-// 	// fmt.Println(primes)
-// 	GetMetricDataForContainer("192.168.0.26", "mysql_container_name", "cpu", time.Now().Unix())
-//
-// }
