@@ -8,7 +8,11 @@ type DataPoint struct {
 	MetricType string
 }
 
-func GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64) []float32 {
+func GetAgentInformation() {
+
+}
+
+func GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) []float32 {
 
 	dataPoints := GetData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
@@ -49,14 +53,33 @@ func GetMetricDataForContainer(agentIp string, containerId string, metricType st
 
 	fmt.Println(len(points))
 
-	for i, point := range points {
-		fmt.Printf(" %d : %f \n", i, point)
-	}
+	// for i, point := range points {
+	// 	fmt.Printf(" %d : %f \n", i, point)
+	// }
 
 	FillMissingValues(points)
 
-	for i, point := range points {
-		fmt.Printf(" %d : %f \n", i, point)
+	// for i, point := range points {
+	// 	fmt.Printf(" %d : %f \n", i, point)
+	// }
+
+	if len(points) > numberOfPoints {
+		// Trim the slice if we have more points than asked for
+		numberOfExtraPoints := len(points) - numberOfPoints
+		fmt.Println(len(points[numberOfExtraPoints:]))
+		return points[numberOfExtraPoints:]
+	} else if len(points) < numberOfPoints {
+		// If points are less than required then pad 0 at the start
+		var remainingPoints []float32
+		numberOfPointsMissing := numberOfPoints - len(points)
+		for i := 0; i < numberOfPointsMissing; i += 1 {
+			remainingPoints = append(remainingPoints, 0)
+		}
+		remainingPoints = append(remainingPoints, points...)
+
+		fmt.Println(len(remainingPoints))
+		return remainingPoints
+
 	}
 
 	return points

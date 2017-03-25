@@ -16,10 +16,6 @@ const (
 	password = "bumblebeetuna"
 )
 
-func GetAgentDetails() {
-
-}
-
 func GetConnection() influx.Client {
 
 	// Create a new HTTPClient
