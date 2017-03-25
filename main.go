@@ -13,7 +13,7 @@ var debug = true
 func main() {
 
 	SlidingWindowSize := 2048               //SlidingWindow
-	PredictionWindowSize := 64              //PredictionWindow
+	PredictionWindowSize := 128             //PredictionWindow
 	predictionFrequency := time.Second * 10 // in seconds
 	fmt.Println("Prediction Frequency is ", predictionFrequency)
 
@@ -57,13 +57,14 @@ func main() {
 
 func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
 
+	bin := 10
 	// Logic to start prediction
 
 	haar := predictor.WaveletTransform{SlidingWindow: SlidingWindowSize, PredictionWindow: PredictionWindowSize}
 
 	// replace fetchedData with fetched Data from db
 
-	predictedArray, err := predictor.Predictor(&haar, fetchedData, logic)
+	predictedArray, err := predictor.Predictor(&haar, fetchedData, bin, logic)
 	if err != nil {
 		fmt.Println("Error received from Predictor ", err)
 		panic("Exiting due to Predictor not working")
