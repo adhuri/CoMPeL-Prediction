@@ -75,8 +75,8 @@ func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData
 
 func storeAgentDetails() (err error) {
 	// Get Agent Details from the fb
-	//Get Agent details - map of container_name : Agent IP
-	fetcher.GetAgentDetails()
+	// Get Agent details - map of container_name : Agent IP
+	// fetcher.GetAgentDetails()
 	return
 
 }

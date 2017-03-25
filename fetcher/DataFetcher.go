@@ -140,3 +140,7 @@ func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId st
 	return nil
 
 }
+
+// func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId string, metric string, currentTimeStamp int64, endTimeStamp int64) ([]float32, error) {
+//
+// }

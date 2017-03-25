@@ -63,7 +63,7 @@ func getData(agentIp string, containerId string, metric string) []DataPoint {
 		log.Fatal(err)
 	}
 
-	q := fmt.Sprintf("select %s from container_data where agent = '%s' and container = '%s' ORDER BY time DESC LIMIT 20", metric, agentIp, containerId)
+	q := fmt.Sprintf("select %s from container_data where agent = '%s' and container = '%s' ORDER BY time DESC LIMIT 10000", metric, agentIp, containerId)
 
 	res, err := queryDB(c, q)
 	if err != nil {
@@ -143,4 +143,62 @@ func saveData(dataPoints []DataPoint, conn influx.Client) error {
 
 	return nil
 
+}
+
+func getPredictedData(agentIp string, containerId string, metric string) []DataPoint {
+
+	c, err := influx.NewHTTPClient(influx.HTTPConfig{
+		Addr:     "http://localhost:10090",
+		Username: username,
+		Password: password,
+	})
+
+	defer c.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	q := fmt.Sprintf("select value from predicted_container_data where agent = '%s' and container = '%s' and metric = '%s' ORDER BY time DESC LIMIT 10000", agentIp, containerId, metric)
+
+	res, err := queryDB(c, q)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(res) == 0 {
+		panic("Result is empty for given query")
+	}
+
+	if len(res[0].Series) == 0 {
+		panic("Series is empty for given query")
+	}
+
+	var dataPoints []DataPoint
+	for _, value := range res[0].Series[0].Values {
+		timeStamp, ok := value[0].(string)
+		if ok {
+			t, err := time.Parse(time.RFC3339, timeStamp)
+			if err != nil {
+				panic("Unable to parse date")
+			}
+			tm := t.Unix()
+
+			value, ok := value[1].(json.Number)
+			if !ok {
+				continue
+			}
+			floatValue, err := strconv.ParseFloat(value.String(), 32)
+			if err != nil {
+				continue
+			}
+
+			dataPoint := DataPoint{
+				Timestamp:  tm,
+				Value:      float32(floatValue),
+				MetricType: "cpu",
+			}
+			dataPoints = append(dataPoints, dataPoint)
+		}
+	}
+	return dataPoints
 }
