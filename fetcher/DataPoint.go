@@ -12,7 +12,7 @@ func GetAgentInformation() {
 
 }
 
-func GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) []float32 {
+func GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
 
 	dataPoints := GetData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
@@ -67,7 +67,7 @@ func GetMetricDataForContainer(agentIp string, containerId string, metricType st
 		// Trim the slice if we have more points than asked for
 		numberOfExtraPoints := len(points) - numberOfPoints
 		fmt.Println(len(points[numberOfExtraPoints:]))
-		return points[numberOfExtraPoints:]
+		return points[numberOfExtraPoints:], time
 	} else if len(points) < numberOfPoints {
 		// If points are less than required then pad 0 at the start
 		var remainingPoints []float32
@@ -78,11 +78,11 @@ func GetMetricDataForContainer(agentIp string, containerId string, metricType st
 		remainingPoints = append(remainingPoints, points...)
 
 		fmt.Println(len(remainingPoints))
-		return remainingPoints
+		return remainingPoints, time
 
 	}
 
-	return points
+	return points, time
 
 }
 
