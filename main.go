@@ -39,7 +39,11 @@ func main() {
 				//for every container
 				{
 					//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
-					fetchedDataArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.30", "mysql", "cpu", time.Now().Unix(), SlidingWindowSize)
+					fetchedDataArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.28", "mysql", "cpu", time.Now().Unix(), SlidingWindowSize)
+
+					if debug {
+						fmt.Println("Fetched Array ", fetchedDataArray)
+					}
 
 					// Perform prediction
 					predictedArray := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataArray, 1)
@@ -47,14 +51,21 @@ func main() {
 						fmt.Println("\nPredicted Array ", predictedArray)
 
 					}
+					// Check Accuracy of prediciton
+
+					withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, err := predictor.AccuracyChecker(fetchedDataArray, predictedArray, PredictionWindowSize, 1)
+					if err != nil {
+						fmt.Println("Accuracy checker failed ", err)
+					}
+					fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\n\n")
 
 					//Pass predicted array to store to influx db
 
 					fmt.Println("Storing predicted array back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err := DataFetcher.SavePredictedData("192.168.0.30", "mysql", "cpu", predictedArray, alignedTimestamp)
-					if err != nil {
+					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu", predictedArray, alignedTimestamp)
+					if err1 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
 				}
@@ -88,7 +99,7 @@ func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData
 func storeAgentDetails() (err error) {
 	// Get Agent Details from the fb
 	//Get Agent details - map of container_name : Agent IP
-	fetcher.GetAgentDetails()
+	//fetcher.GetAgentDetails()
 	return
 
 }
