@@ -44,8 +44,12 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 		}
 
 	}
+	if debug {
+		fmt.Println("Transition matrix - ", p)
+	}
 	var results []int // Declaring
 
+	//fmt.Println("Transition matrix", p)
 	//Initializing
 	if predictionWindow == 0 {
 		results = make([]int, 1)
@@ -69,7 +73,7 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 
 func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 
-	var maxIndices = make([]int, D)
+	var maxIndices []int
 	max := transitionMatrix[lastElement][1] // since n+1 by n+1 matrix
 
 	// 1st pass for max
@@ -89,12 +93,16 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 	for i, elem := range transitionMatrix[lastElement] {
 		if elem == max {
 			maxIndices = append(maxIndices, i)
-
 		}
 	}
 
+	//return maxIndices[random(0, len(maxIndices))]
+	if len(maxIndices) > 1 {
+		if debug {
+			fmt.Println(" For last element ", lastElement, "--------=========Many probabilities same==============-------------", maxIndices)
+		}
+	}
 	return maxIndices[random(0, len(maxIndices))]
-
 }
 
 // func findMaxProbabilityState(int rowNumber, transitionMatrix [][]float32) int {

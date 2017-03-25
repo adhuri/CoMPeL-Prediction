@@ -6,10 +6,12 @@ import (
 	"math"
 )
 
+var debug = true
+
 //Predictor Interface for any predictor
 type PredictionLogic interface {
 	GetPredictorName() string
-	Predict(pastArray []float32, logic int) (predictedArray []float32, s error)
+	Predict(pastArray []float32, bin int, logic int) (predictedArray []float32, s error)
 }
 
 type WaveletTransform struct {
@@ -21,12 +23,13 @@ type WaveletTransform struct {
 }
 
 // Predictor Funcion to predict which takes input Prediction Logic
-func Predictor(p PredictionLogic, pastArray []float32, logic int) (predictedArray []float32, err error) {
+func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int) (predictedArray []float32, err error) {
 	fmt.Println("Predictor Name : ", p.GetPredictorName())
-	predictedArray, err = p.Predict(pastArray, logic)
+	predictedArray, err = p.Predict(pastArray, bin, logic)
 	if err != nil {
 		return
 	}
+	valueRaiser(predictedArray[:], 5)
 	negativeValuesFixer(predictedArray[:])
 
 	return
@@ -37,7 +40,7 @@ func (haar *WaveletTransform) GetPredictorName() string {
 }
 
 //Used to Predict WaveletTransform
-func (haar *WaveletTransform) Predict(pastArray []float32, logic int) (predictedArray []float32, err error) {
+func (haar *WaveletTransform) Predict(pastArray []float32, bin int, logic int) (predictedArray []float32, err error) {
 	// Check the Sliding windowsize
 	//if even continue
 
@@ -56,7 +59,7 @@ func (haar *WaveletTransform) Predict(pastArray []float32, logic int) (predicted
 		pastArray = append(pastArray[len(pastArray)-haar.SlidingWindow:]) // To trim from totallength- sliding window to end of array
 	}
 
-	predictedCoefficients := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))), logic)
+	predictedCoefficients := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))), bin, logic)
 
 	if debug {
 		fmt.Println("Predicted coefficients array: ", predictedCoefficients)
@@ -65,21 +68,6 @@ func (haar *WaveletTransform) Predict(pastArray []float32, logic int) (predicted
 	invertedArray := Inverse_haar(predictedCoefficients)
 	predictedArray = invertedArray
 	return
-}
-
-//Prediction is not accurate and for near zero values could predict negative Values. Fixing them to zero
-// All it means is the value approaches zero
-func negativeValuesFixer(result []float32) {
-	fixedCount := 0
-	for i, el := range result {
-		if el < 0 {
-			result[i] = 0
-			fixedCount += 1
-		}
-	}
-	if debug {
-		fmt.Println("Fixed negative values in predicted array ", fixedCount)
-	}
 }
 
 // Utility function to check if number is power of two

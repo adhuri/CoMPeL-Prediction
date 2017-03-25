@@ -5,10 +5,29 @@ import (
 	"math"
 )
 
-var debug = false
+type ValueState interface {
+	/*
+		Logic Name is composed of two parts
+		1st tells How to divide array for markov - eg EqualWidth , EqualDepth , Random
+
+		EqualWidth - Same number of elements in every bucket
+		EqualDepth -
+		Random
+
+		2nd tells How to convert states to values
+
+	*/
+	GetLogicName() string
+	ConvertValuesToStates()
+	ConvertStatesToValues()
+}
 
 // Haar ...  pastArray , scale is , logic numbers
-func Haar(pastArray []float32, scale int, logic int) [][]float32 {
+func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
+
+	// Number of Bins
+	numStates := bin
+	fmt.Println("Bins configured for states", bin)
 
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
 	scaleMap := make(map[int][]float32)
@@ -27,7 +46,7 @@ func Haar(pastArray []float32, scale int, logic int) [][]float32 {
 		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
 
 		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
-		numStates := 12
+
 		stateDeciderD := make([]float32, numStates+1)
 
 		/// Find min, max
