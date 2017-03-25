@@ -17,6 +17,9 @@ func main() {
 	predictionFrequency := time.Second * 10 // in seconds
 	fmt.Println("Prediction Frequency is ", predictionFrequency)
 
+	// Data fetcher
+	DataFetcher := fetcher.NewDataFetcher()
+
 	predictionTimer := time.NewTicker(predictionFrequency).C
 	for {
 		select {
@@ -35,16 +38,25 @@ func main() {
 
 				//for every container
 				{
-					fetchedData := fetcher.GetMetricDataForContainer("192.168.0.30", "mysql", "cpu", time.Now().Unix())
+					//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
+					fetchedDataArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.30", "mysql", "cpu", time.Now().Unix(), SlidingWindowSize)
 
 					// Perform prediction
-					predictedArray := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedData, 1)
+					predictedArray := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataArray, 1)
 					if debug {
 						fmt.Println("\nPredicted Array ", predictedArray)
+
 					}
 
 					//Pass predicted array to store to influx db
 
+					fmt.Println("Storing predicted array back to db ")
+					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+
+					err := DataFetcher.SavePredictedData("192.168.0.30", "mysql", "cpu", predictedArray, alignedTimestamp)
+					if err != nil {
+						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
+					}
 				}
 
 				// Pass all predicted array to migration decider
