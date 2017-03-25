@@ -22,11 +22,8 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	var latestTimesStamp int64
 	var oldestTimesStamp int64
 
-	fmt.Println(len(dataPoints))
-
 	for i, point := range dataPoints {
 		dataPointMap[point.Timestamp] = point.Value
-		//fmt.Printf("%d : %f \n", point.Timestamp, point.Value)
 		if i == 0 {
 			oldestTimesStamp = point.Timestamp
 		}
@@ -39,10 +36,6 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		}
 	}
 
-	fmt.Println(oldestTimesStamp)
-	fmt.Println(latestTimesStamp)
-	fmt.Println(time)
-
 	var points []float32
 	for i := oldestTimesStamp; i <= time; i += 1 {
 		// if there is break in time series, aligning will be impossible with 2 seconds sampling
@@ -52,8 +45,6 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 			points = append(points, -1) //some point might have 0 value
 		}
 	}
-
-	fmt.Println(len(points))
 
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
@@ -134,5 +125,7 @@ func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId st
 
 	conn := getConnection()
 	saveData(dataPoints, conn)
+
+	conn.Close()
 
 }
