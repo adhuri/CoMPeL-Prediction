@@ -143,7 +143,7 @@ func main() {
 
 func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
 
-	bin := 10
+	bin := 30
 	// Logic to start prediction
 
 	haar := predictor.WaveletTransform{SlidingWindow: SlidingWindowSize, PredictionWindow: PredictionWindowSize}
