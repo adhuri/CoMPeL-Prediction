@@ -12,7 +12,6 @@ type ValueState interface {
 
 		EqualWidth - Same number of elements in every bucket
 		EqualDepth -
-		Random
 
 		2nd tells How to convert states to values
 
@@ -22,11 +21,11 @@ type ValueState interface {
 	ConvertStatesToValues()
 }
 
-// Haar ...  pastArray , scale is , logic numbers
-func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
+// Haar ...  pastArray , bin is max numberStates to generate , logic numbers
+func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]float32 {
 
-	// Number of Bins
-	numStates := bin
+	//  Scale for prediction
+	scale := int(math.Log2(float64(predictionWindow)))
 	fmt.Println("Bins configured for states", bin)
 
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
@@ -47,11 +46,11 @@ func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
 
 		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
 
-		stateDeciderD := make([]float32, numStates+1)
+		stateDeciderD := make([]float32, bin+1)
 
 		/// Find min, max
 		minD, maxD := findMinMax(DetailedCoefficent)
-		diffD := (maxD - minD) / float32(numStates)
+		diffD := (maxD - minD) / float32(bin)
 
 		/// Add to map
 		scaleMap[scaleNum] = []float32{minD, maxD, diffD}
@@ -60,8 +59,8 @@ func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
 		/// e.g state decider array [a,b,c,d]: State 1 is [a,b), state 2 is [b,c)
 
 		stateDeciderD[0] = minD
-		stateDeciderD[numStates] = maxD
-		for i := 1; i < numStates; i++ {
+		stateDeciderD[bin] = maxD
+		for i := 1; i < bin; i++ {
 			stateDeciderD[i] = stateDeciderD[i-1] + diffD
 		}
 
@@ -81,7 +80,7 @@ func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
 		}
 
 		/// Predicted States
-		predictedArray := predictMarkov(stateArrayD, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
+		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))))
 		if debug {
 			fmt.Println("Predicted array of D is ", predictedArray)
 		}
@@ -100,18 +99,18 @@ func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
 			if debug {
 				fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
 			}
-			stateDeciderA := make([]float32, numStates+1)
+			stateDeciderA := make([]float32, bin+1)
 			stateArrayA := make([]int, len(ApproximateCoefficient))
 			minA, maxA := findMinMax(ApproximateCoefficient)
 			if debug {
 				fmt.Println("Min max A ", minA, ",", maxA)
 			}
-			diffA := (maxA - minA) / float32(numStates)
+			diffA := (maxA - minA) / float32(bin)
 			// index = 0
 
 			stateDeciderA[0] = minA
-			stateDeciderA[numStates] = maxA
-			for i := 1; i < numStates; i++ {
+			stateDeciderA[bin] = maxA
+			for i := 1; i < bin; i++ {
 				stateDeciderA[i] = stateDeciderA[i-1] + diffA
 			}
 			for index, elem := range ApproximateCoefficient {
@@ -123,7 +122,7 @@ func Haar(pastArray []float32, scale int, bin int, logic int) [][]float32 {
 			}
 
 			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, numStates, 0)
+			predictedArrayA := predictMarkov(stateArrayA, bin, 0)
 			//float64(scale-scaleNum))))
 			if debug {
 				fmt.Println("Predicted array of A is ", predictedArrayA)
@@ -181,12 +180,12 @@ func Haar_old(f []float32, scale int) [][]float32 {
 		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
 
 		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
-		numStates := 10
-		stateDeciderD := make([]float32, numStates+1)
+		bin := 10
+		stateDeciderD := make([]float32, bin+1)
 
 		/// Find min, max
 		minD, maxD := findMinMax(D)
-		diffD := (maxD - minD) / float32(numStates)
+		diffD := (maxD - minD) / float32(bin)
 
 		/// Add to map
 		scaleMap[scaleNum] = []float32{minD, maxD, diffD}
@@ -195,8 +194,8 @@ func Haar_old(f []float32, scale int) [][]float32 {
 		/// e.g state decider array [a,b,c,d]: State 1 is [a,b), state 2 is [b,c)
 
 		stateDeciderD[0] = minD
-		stateDeciderD[numStates] = maxD
-		for i := 1; i < numStates; i++ {
+		stateDeciderD[bin] = maxD
+		for i := 1; i < bin; i++ {
 			stateDeciderD[i] = stateDeciderD[i-1] + diffD
 		}
 
@@ -212,7 +211,7 @@ func Haar_old(f []float32, scale int) [][]float32 {
 		fmt.Println("State array of D is: ", stateArrayD)
 
 		/// Predicted States
-		predictedArray := predictMarkov(stateArrayD, numStates, int(math.Pow(float64(2), float64(scale-scaleNum))))
+		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))))
 		fmt.Println("Predicted array of D is ", predictedArray)
 
 		/// Convert States back to Avg between the gaps
@@ -225,16 +224,16 @@ func Haar_old(f []float32, scale int) [][]float32 {
 
 		if scaleNum == scale {
 			fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
-			stateDeciderA := make([]float32, numStates+1)
+			stateDeciderA := make([]float32, bin+1)
 			stateArrayA := make([]int, len(A))
 			minA, maxA := findMinMax(A)
 			fmt.Println("Min max A ", minA, ",", maxA)
-			diffA := (maxA - minA) / float32(numStates)
+			diffA := (maxA - minA) / float32(bin)
 			// index = 0
 
 			stateDeciderA[0] = minA
-			stateDeciderA[numStates] = maxA
-			for i := 1; i < numStates; i++ {
+			stateDeciderA[bin] = maxA
+			for i := 1; i < bin; i++ {
 				stateDeciderA[i] = stateDeciderA[i-1] + diffA
 			}
 			for index, elem := range A {
@@ -244,7 +243,7 @@ func Haar_old(f []float32, scale int) [][]float32 {
 			fmt.Println("State array of A in the last scale is: ", stateArrayA)
 
 			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, numStates, 0)
+			predictedArrayA := predictMarkov(stateArrayA, bin, 0)
 			//float64(scale-scaleNum))))
 			fmt.Println("Predicted array of A is ", predictedArrayA)
 

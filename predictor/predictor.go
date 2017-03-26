@@ -3,10 +3,9 @@ package predictor
 import (
 	"errors"
 	"fmt"
-	"math"
 )
 
-var debug = false
+var debug = true
 
 //Predictor Interface for any predictor
 type PredictionLogic interface {
@@ -29,7 +28,10 @@ func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int) (pred
 	if err != nil {
 		return
 	}
-	valueRaiser(predictedArray[:], 5)
+	// Value Raiser set to 0
+	valueRaiser(predictedArray[:], 0)
+
+	// CPU , memory cannot be negative
 	negativeValuesFixer(predictedArray[:])
 
 	return
@@ -59,7 +61,7 @@ func (haar *WaveletTransform) Predict(pastArray []float32, bin int, logic int) (
 		pastArray = append(pastArray[len(pastArray)-haar.SlidingWindow:]) // To trim from totallength- sliding window to end of array
 	}
 
-	predictedCoefficients := Haar(pastArray, int(math.Log2(float64(haar.PredictionWindow))), bin, logic)
+	predictedCoefficients := Haar(pastArray, haar.PredictionWindow, bin, logic)
 
 	if debug {
 		fmt.Println("Predicted coefficients array: ", predictedCoefficients)
