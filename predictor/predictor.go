@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-var debug = true
+var debug = false
 
 //Predictor Interface for any predictor
 type PredictionLogic interface {

@@ -21,7 +21,7 @@ func (dataFetcher *DataFetcher) GetAgentInformation() {
 }
 
 func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
-
+	fmt.Println("FETCHER : GetMetricDataForContainer")
 	dataPoints := getData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
 
@@ -55,8 +55,9 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
 	// }
-
+	//fmt.Println("FETCHER : Points", len(points), points)
 	fillMissingValues(points)
+	//fmt.Println("FETCHER : Points length", len(points))
 
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
@@ -76,11 +77,11 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		}
 		remainingPoints = append(remainingPoints, points...)
 
-		fmt.Println(len(remainingPoints))
+		//fmt.Println("FETCHER: fetchedArray", points)
 		return remainingPoints, time
 
 	}
-
+	//fmt.Println("FETCHER: fetchedArray", points)
 	return points, time
 
 }
