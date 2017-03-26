@@ -21,7 +21,7 @@ func (dataFetcher *DataFetcher) GetAgentInformation() {
 }
 
 func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
-	fmt.Println("FETCHER : GetMetricDataForContainer")
+
 	dataPoints := getData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
 
@@ -55,9 +55,8 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
 	// }
-	//fmt.Println("FETCHER : Points", len(points), points)
+
 	fillMissingValues(points)
-	//fmt.Println("FETCHER : Points length", len(points))
 
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
@@ -77,11 +76,11 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		}
 		remainingPoints = append(remainingPoints, points...)
 
-		//fmt.Println("FETCHER: fetchedArray", points)
+		fmt.Println(len(remainingPoints))
 		return remainingPoints, time
 
 	}
-	//fmt.Println("FETCHER: fetchedArray", points)
+
 	return points, time
 
 }
@@ -142,6 +141,54 @@ func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId st
 
 }
 
-// func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId string, metric string, currentTimeStamp int64, endTimeStamp int64) ([]float32, error) {
+//
+func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId string, metric string, startTimeStamp int64, endTimeStamp int64) ([]float32, error) {
+
+	dataPoints := getPredictedData(agentIP, containerId, metric)
+
+	dataPointMap := make(map[int64]float32)
+
+	// var latestTimesStamp int64
+	// var oldestTimesStamp int64
+
+	for _, point := range dataPoints {
+		dataPointMap[point.Timestamp] = point.Value
+		fmt.Println(point.Timestamp)
+		// if i == 0 {
+		// 	oldestTimesStamp = point.Timestamp
+		// }
+		// if point.Timestamp > latestTimesStamp {
+		// 	latestTimesStamp = point.Timestamp
+		// }
+		//
+		// if point.Timestamp < oldestTimesStamp {
+		// 	oldestTimesStamp = point.Timestamp
+		// }
+	}
+
+	var points []float32
+	for i := startTimeStamp; i <= endTimeStamp; i++ {
+		if value, present := dataPointMap[i]; present {
+			points = append(points, value)
+		} else {
+			points = append(points, 0) //some point might have 0 value
+		}
+	}
+
+	return points, nil
+
+}
+
+//
+// func main() {
+// 	dataFetcher := NewDataFetcher()
+// 	// predictedValues := []float32{0.1, 0.02, 3.03, 4.04, 5.05, 6.06}
+// 	// dataFetcher.GetPredictedData("192.168.0.13", "practice", "cpu", time.Now().Unix()-3600, time.Now().Unix())
+//
+// 	// fmt.Println(time.Now().Unix())
+// 	// fmt.Println(time.Now().Unix() - 3550)
+// 	points, _ := dataFetcher.GetPredictedData("192.168.0.17", "practice", "cpu", time.Now().Unix()-3550, time.Now().Unix())
+//
+// 	fmt.Println(points)
 //
 // }
