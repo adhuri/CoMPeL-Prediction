@@ -84,8 +84,24 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 	}
 	/// Special case all zeros
 	if D == 0 || max == 0 {
+		if debug {
+			fmt.Println("Special case where you are in predictNext and all probabilities zero in prediction matrix ")
+		}
+
+		// Special case when predictNext is on last element
+		if lastElement == (len(transitionMatrix[1]) - 1) {
+			if debug {
+				fmt.Println("predictNext for last state, go to random state to avoid predicting last state")
+			}
+			return random(1, len(transitionMatrix[1])) // to escape from always predicting Last state
+		}
+
 		//fmt.Print("\n-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``---D is possibily 0 ----- \n")
-		return random(1, len(transitionMatrix[1]))
+
+		// Always send Higher values ( so no dip )
+
+		return random(lastElement+1, len(transitionMatrix[1]))
+
 	}
 
 	// 2nd pass for max

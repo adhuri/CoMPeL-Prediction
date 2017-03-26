@@ -55,9 +55,9 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
 	// }
-	fmt.Println("FETCHER : Points", len(points), points)
+	//fmt.Println("FETCHER : Points", len(points), points)
 	fillMissingValues(points)
-	fmt.Println("FETCHER : Points length", len(points))
+	//fmt.Println("FETCHER : Points length", len(points))
 
 	// for i, point := range points {
 	// 	fmt.Printf(" %d : %f \n", i, point)
