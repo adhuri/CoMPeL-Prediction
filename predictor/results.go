@@ -6,14 +6,15 @@ import (
 )
 
 ///Function to check accuracy +- accuracy  Threshold
-func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, accuracyThreshold float32) (withingThresholdEstimatePercentage float32, underThresholdEstimatePercentage float32, overThresholdEstimatePercentage float32, e error) {
+func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, accuracyThreshold float32) (withingThresholdEstimatePercentage float32, underThresholdEstimatePercentage float32, overThresholdEstimatePercentage float32, averageOverEstimate float32, averageUnderEstimate float32, e error) {
 
 	//actualArray := []float32{13, 12, 11.9, 13, 13, 13, 13, 11, 13, 12, 11.9, 12, 13, 13, 12, 12, 12, 13, 12.9, 12, 13, 11, 13, 13, 13, 12, 11.9, 13, 13, 12, 13, 12, 13, 13, 13, 13, 13, 12.9, 13, 13, 13, 12, 14, 13, 13, 11.9, 12, 13, 13, 13, 13, 12, 11.9, 12, 12, 13, 12, 12, 13, 12, 9, 10.9, 12, 13}
 
 	var withingThresholdEstimateCount, underThresholdEstimateCount, overThresholdEstimateCount int
+	var underEstimateSum, overEstimateSum float32
 
 	if size != len(predictedArray) || size > len(actualArray) {
-		return 0, 0, 0, errors.New("Len of predicted Array or actualArray is not same as prediction window size")
+		return 0, 0, 0, 0, 0, errors.New("Len of predicted Array or actualArray is not same as prediction window size")
 	}
 
 	if len(actualArray) < size {
@@ -31,29 +32,31 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 		fmt.Print("\n i\tActual\tPredicted", "\n")
 	}
 
-	for i, el := range predictedArray {
+	for i, predictedValue := range predictedArray {
 
-		if el <= (actualArray[i]+accuracyThreshold) && el >= (actualArray[i]-accuracyThreshold) {
+		if predictedValue <= (actualArray[i]+accuracyThreshold) && predictedValue >= (actualArray[i]-accuracyThreshold) {
 			// withing Threshold Estimate Count
 			withingThresholdEstimateCount++
 
-		} else if el < (actualArray[i] - accuracyThreshold) {
+		} else if predictedValue < (actualArray[i] - accuracyThreshold) {
 			//under Threshold Estimate Count
 			underThresholdEstimateCount++
+			underEstimateSum = actualArray[i] - predictedValue
 			if debug {
-				fmt.Print("- ", i, "\t", actualArray[i], "\t", el, "\n")
+				fmt.Print("- ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}
 
-		} else if el > (actualArray[i] + accuracyThreshold) {
+		} else if predictedValue > (actualArray[i] + accuracyThreshold) {
 			//over Threshold Estimate Count
 			overThresholdEstimateCount++
-
+			overEstimateSum = predictedValue - actualArray[i]
 			if debug {
-				fmt.Print("+ ", i, "\t", actualArray[i], "\t", el, "\n")
+				fmt.Print("+ ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}
 		}
 	}
-
+	averageOverEstimate = overEstimateSum / float32(overThresholdEstimateCount)
+	averageUnderEstimate = underEstimateSum / float32(underThresholdEstimateCount)
 	withingThresholdEstimatePercentage = (float32(withingThresholdEstimateCount) / float32(size)) * 100
 	underThresholdEstimatePercentage = (float32(underThresholdEstimateCount) / float32(size)) * 100
 	overThresholdEstimatePercentage = (float32(overThresholdEstimateCount) / float32(size)) * 100
