@@ -21,6 +21,19 @@ type ValueState interface {
 	ConvertStatesToValues()
 }
 
+// P1 struct logic 1 - fixed bin size
+type P1 struct {
+	name         string
+	numberOfBins int // Number of bins
+}
+
+// P2 ... logic 2 no fixed bins
+type P2 struct {
+	name            string
+	cpl             float32 // Close proximity length
+	maxNumberOfBins int     //Number of max bins
+}
+
 // Haar ...  pastArray , bin is max numberStates to generate , logic numbers
 func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]float32 {
 
@@ -31,20 +44,20 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
 	scaleMap := make(map[int][]float32)
 
-	var ApproximateCoefficient []float32 = pastArray[:]
+	ApproximateCoefficient := pastArray[:]
+
+	// To store the results
 	var res [][]float32
 	scaleNum := 1
 
+	// Generate either till ApproximateCoefficient has length 1 or if scaleNum is equal to the required number of scales
+	// based on predictionWindow Size
 	for len(ApproximateCoefficient) > 1 && scaleNum <= scale {
 		var DetailedCoefficent []float32
-		ApproximateCoefficient, DetailedCoefficent = haar_level(ApproximateCoefficient)
+		ApproximateCoefficient, DetailedCoefficent = haarLevel(ApproximateCoefficient)
 		if debug {
-			fmt.Print("\n Haar Level ", scaleNum, "\t | \t", ApproximateCoefficient, "\t | \t", DetailedCoefficent, "\n")
+			fmt.Print("\n Haar Level ", scaleNum, "\t -|- \t", ApproximateCoefficient, "\t -|- \t", DetailedCoefficent, "\n")
 		}
-
-		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
-
-		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
 
 		stateDeciderD := make([]float32, bin+1)
 
@@ -148,17 +161,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 	return res
 }
 
-//To find haar Approximate and detailed coefficients for each level
-func haar_level(f []float32) (a []float32, d []float32) {
-	base := float32(1.0 / math.Pow(2, 0.5))
-	var n int = len(f) / 2
-	for i := 0; i < n; i++ {
-		a = append(a, base*(f[2*i]+f[2*i+1]))
-		d = append(d, base*(f[2*i]-f[2*i+1]))
-	}
-	return
-}
-
+/*
 // Haar ...
 func Haar_old(f []float32, scale int) [][]float32 {
 
@@ -264,19 +267,8 @@ func Haar_old(f []float32, scale int) [][]float32 {
 
 	return res
 }
-
-// stateArrayGeneratorEquidistantWidth()
-
-/*
-// Converts coefficients to timeseries
-func convertHaarCoeeficientToTimeSeries(pastArray, ACoefficient, DCoefficient []float32) (A, D []float32) {
-
-	numOfCoefficients := len(D)
-	numOfTimeSeriesPoints := len(pastArray)
-
-	return
-}
 */
+
 // Converts States to values by converting int array to float32 array taking average between gaps
 func convertStatesToValues(predictedArray []int, minMaxDiff []float32) []float32 {
 	convertedArray := make([]float32, len(predictedArray))
@@ -351,7 +343,21 @@ func findMinMax(arr []float32) (float32, float32) {
 	return min, max
 }
 
-func inverse_haar_level(a []float32, d []float32) (res []float32) {
+// Haar coefficients
+//To find haar Approximate and detailed coefficients for each level
+func haarLevel(f []float32) (a []float32, d []float32) {
+	base := float32(1.0 / math.Pow(2, 0.5))
+	var n int = len(f) / 2
+	for i := 0; i < n; i++ {
+		a = append(a, base*(f[2*i]+f[2*i+1]))
+		d = append(d, base*(f[2*i]-f[2*i+1]))
+	}
+	return
+}
+
+//Inverse Haar coefficients
+
+func inverseHaarLevel(a []float32, d []float32) (res []float32) {
 	base := float32(1.0 / math.Pow(2, 0.5))
 	for i := 0; i < len(a); i++ {
 		res = append(res, base*(a[i]+d[i]))
@@ -360,10 +366,10 @@ func inverse_haar_level(a []float32, d []float32) (res []float32) {
 	return
 }
 
-func Inverse_haar(h [][]float32) (an []float32) {
+func InverseHaar(h [][]float32) (an []float32) {
 	an = h[0]
 	for i := 1; i < len(h); i++ {
-		an = inverse_haar_level(an, h[i])
+		an = inverseHaarLevel(an, h[i])
 	}
 	return
 }

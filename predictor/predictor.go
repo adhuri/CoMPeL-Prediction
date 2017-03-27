@@ -67,7 +67,7 @@ func (haar *WaveletTransform) Predict(pastArray []float32, bin int, logic int) (
 		fmt.Println("Predicted coefficients array: ", predictedCoefficients)
 	}
 
-	invertedArray := Inverse_haar(predictedCoefficients)
+	invertedArray := InverseHaar(predictedCoefficients)
 	predictedArray = invertedArray
 	return
 }
