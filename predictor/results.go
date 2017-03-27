@@ -43,7 +43,7 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 		} else if predictedValue < (actualArray[i] - accuracyThreshold) {
 			//under Threshold Estimate Count
 			underThresholdEstimateCount++
-			underEstimateSum = actualArray[i] - predictedValue
+			underEstimateSum += (actualArray[i] - predictedValue)
 			if resultsDebug {
 				fmt.Print("- ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}
@@ -51,7 +51,7 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 		} else if predictedValue > (actualArray[i] + accuracyThreshold) {
 			//over Threshold Estimate Count
 			overThresholdEstimateCount++
-			overEstimateSum = predictedValue - actualArray[i]
+			overEstimateSum += (predictedValue - actualArray[i])
 			if resultsDebug {
 				fmt.Print("+ ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}

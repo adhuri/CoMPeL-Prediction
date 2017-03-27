@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
+func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool) (res []int) {
 
 	// states := 10
 
@@ -54,7 +54,7 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 	if predictionWindow == 0 {
 		results = make([]int, 1)
 		lastElement := arr[len(arr)-1]
-		results[0] = predictNext(lastElement, p, 0)
+		results[0] = predictNext(lastElement, p, 0, goUp)
 
 	} else {
 		results = make([]int, predictionWindow)
@@ -62,7 +62,7 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 
 	lastElement := arr[len(arr)-1]
 	for i := 0; i < predictionWindow; i++ {
-		results[i] = predictNext(lastElement, p, predictionWindow)
+		results[i] = predictNext(lastElement, p, predictionWindow, goUp)
 
 		lastElement = results[i]
 	}
@@ -71,7 +71,7 @@ func predictMarkov(arr []int, numStates int, predictionWindow int) (res []int) {
 
 }
 
-func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
+func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool) int {
 
 	var maxIndices []int
 	max := transitionMatrix[lastElement][1] // since n+1 by n+1 matrix
@@ -99,8 +99,9 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 		//fmt.Print("\n-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``---D is possibily 0 ----- \n")
 
 		// Always send Higher values ( so no dip )
-
-		//return random(lastElement+1, len(transitionMatrix[1]))
+		if goUp {
+			return random(lastElement+1, len(transitionMatrix[1]))
+		}
 		return random(1, len(transitionMatrix[1])) // Any state
 
 	}

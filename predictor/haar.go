@@ -23,6 +23,12 @@ type P1 struct {
 	numberOfBins int // Number of bins
 }
 
+// P1 struct logic 1 - fixed bin size - Go Up Strategy
+type P1GoUp struct {
+	name         string
+	numberOfBins int // Number of bins
+}
+
 // P2 ... logic 2 no fixed bins
 type P2 struct {
 	name            string
@@ -34,21 +40,38 @@ type P2 struct {
 func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]float32 {
 	fmt.Println("Max Bins configured for states", bin)
 
-	/*
-		var predictionLogic HaarPredictionLogic
+	//var predictionLogic HaarPredictionLogic
+	//
+	// switch logic {
+	// case 1:
+	// 	fmt.Println(" P1 Logic chosen for Haar ")
+	// 	predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
+	// case 2:
+	// 	fmt.Println(" P1 Go Up Logic chosen for Haar ")
+	// 	predictionLogic = P1GoUp{name: "P1 GoUp Logic", numberOfBins: bin}
+	// case 3:
+	// 	fmt.Println(" P2 Logic chosen for Haar ")
+	// 	//predictionLogic = P2{name: "P2 Logic", cpl: 5.0, maxNumberOfBins: bin}
+	// default:
+	// 	fmt.Println("No valid logic chose : Default P1 ")
+	// 	predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
+	// }
 
-		switch logic {
-		case 1:
-			fmt.Println(" P1 Logic chosen for Haar ")
-			predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
-		case 2:
-			fmt.Println(" P2 Logic chosen for Haar ")
-			//predictionLogic = P2{name: "P2 Logic", cpl: 5.0, maxNumberOfBins: bin}
-		default:
-			fmt.Println("No valid logic chose : Default P1 ")
-			predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
-		}
-	*/
+	//Temporary logic usage
+
+	var goUp = false
+	switch logic {
+	case 1:
+		fmt.Println("P1 Logic chosen ")
+		goUp = false
+	case 2:
+		fmt.Println("P1 Go Up Logic Chosen")
+		goUp = true
+	default:
+		fmt.Println("No valid logic chosen - Default P1 Logic chosen ")
+		goUp = false
+	}
+
 	scale := int(math.Log2(float64(predictionWindow)))
 
 	// Logic decider
@@ -107,7 +130,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 		}
 
 		/// Predicted States
-		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))))
+		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))), goUp)
 		if debug {
 			fmt.Println("Predicted array of D is ", predictedArray)
 		}
@@ -149,7 +172,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 			}
 
 			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, bin, 0)
+			predictedArrayA := predictMarkov(stateArrayA, bin, 0, goUp)
 			//float64(scale-scaleNum))))
 			if debug {
 				fmt.Println("Predicted array of A is ", predictedArrayA)

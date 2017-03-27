@@ -62,7 +62,35 @@ func TestPredictionEquidistantStates(t *testing.T) {
 		if err != nil {
 			t.Error("Accuracy checker failed ", err)
 		}
-		fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate %", averageOverEstimate, "\nAverage Under Estimate %", averageUnderEstimate, "\n\n")
+		fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate ", averageOverEstimate, "\nAverage Under Estimate ", averageUnderEstimate, "\n\n")
+
+	}
+}
+
+func TestPredictionEquidistantStatesGoUp(t *testing.T) {
+	sampleData := newTestData()
+	// Logic to start prediction
+
+	haar := predictor.WaveletTransform{SlidingWindow: sampleData.D, PredictionWindow: sampleData.W}
+
+	for logicLoop := 40; logicLoop <= 40; logicLoop = logicLoop + 10 { // only one logic as of now
+		bin := logicLoop
+		predictedArray, err := predictor.Predictor(&haar, sampleData.cpu, bin, 2)
+		if err != nil {
+			t.Error("\nError received from Predictor ", err)
+		}
+
+		if debug {
+			fmt.Print("\nPredicted Array ", predictedArray, "\n")
+		}
+
+		// Accuracy Checker to find +- accuracy Threshold
+		accuracyThreshold := float32(1)
+		withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, averageOverEstimate, averageUnderEstimate, err := predictor.AccuracyChecker(sampleData.actualDemand, predictedArray, sampleData.W, accuracyThreshold)
+		if err != nil {
+			t.Error("Accuracy checker failed ", err)
+		}
+		fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate ", averageOverEstimate, "\nAverage Under Estimate ", averageUnderEstimate, "\n\n")
 
 	}
 }
@@ -89,6 +117,6 @@ func TestPredictionMax(t *testing.T) {
 	if err != nil {
 		t.Error("Accuracy checker failed ", err)
 	}
-	fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate %", averageOverEstimate, "\nAverage Under Estimate %", averageUnderEstimate, "\n\n")
+	fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate ", averageOverEstimate, "\nAverage Under Estimate ", averageUnderEstimate, "\n\n")
 
 }

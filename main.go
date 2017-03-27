@@ -48,18 +48,38 @@ func main() {
 					// Perform prediction
 					predictedArrayCPUHaar := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataCPUArray, 1)
 					if debug {
-						fmt.Println("\nPredicted Array - Haar ", predictedArrayCPUHaar)
+						fmt.Println("\nPredicted Array - Haar P1", predictedArrayCPUHaar)
 
 					}
 					// Check Accuracy of prediciton
 
 					//Pass predicted array to store to influx db
 
-					fmt.Println("Storing Haar predicted array back to db ")
+					fmt.Println("Storing Haar predicted array P1 back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_haar", predictedArrayCPUHaar, alignedTimestamp)
+					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_haar_P1", predictedArrayCPUHaar, alignedTimestamp)
 					if err1 != nil {
+						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
+					}
+
+					// Using GO UP predictor
+
+					// Perform prediction
+					predictedArrayCPUHaarGoUp := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataCPUArray, 2)
+					if debug {
+						fmt.Println("\nPredicted Array - Haar Go Up ", predictedArrayCPUHaarGoUp)
+
+					}
+					// Check Accuracy of prediciton
+
+					//Pass predicted array to store to influx db
+
+					fmt.Println("Storing P1 GoUp predicted array back to db ")
+					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+
+					err3 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_haar_P1_goup", predictedArrayCPUHaarGoUp, alignedTimestamp)
+					if err3 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
 
@@ -109,6 +129,26 @@ func main() {
 
 					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_haar", predictedArrayMemoryHaar, alignedTimestamp)
 					if err1 != nil {
+						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
+					}
+
+					// Using P1 Go UP
+
+					// Perform prediction
+					predictedArrayMemoryHaarGoUp := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataMemoryArray, 2)
+					if debug {
+						fmt.Println("\nPredicted Array - Haar P1 Go Up ", predictedArrayMemoryHaarGoUp)
+
+					}
+					// Check Accuracy of prediciton
+
+					//Pass predicted array to store to influx db
+
+					fmt.Println("Storing Haar Go Up predicted array back to db ")
+					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+
+					err3 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_haar_goup", predictedArrayMemoryHaarGoUp, alignedTimestamp)
+					if err3 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
 
