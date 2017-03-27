@@ -5,17 +5,13 @@ import (
 	"math"
 )
 
-type ValueState interface {
+type HaarPredictionLogic interface {
 	/*
-		Logic Name is composed of two parts
-		1st tells How to divide array for markov - eg EqualWidth , EqualDepth , Random
 
-		EqualWidth - Same number of elements in every bucket
-		EqualDepth -
-
-		2nd tells How to convert states to values
-
+	   P 1 : Logic with equidistance fixed bins
+	   P 2 : Logic  with variable number of bins based on- Closed proximity and No empty bin
 	*/
+
 	GetLogicName() string
 	ConvertValuesToStates()
 	ConvertStatesToValues()
@@ -36,10 +32,28 @@ type P2 struct {
 
 // Haar ...  pastArray , bin is max numberStates to generate , logic numbers
 func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]float32 {
+	fmt.Println("Max Bins configured for states", bin)
+
+	/*
+		var predictionLogic HaarPredictionLogic
+
+		switch logic {
+		case 1:
+			fmt.Println(" P1 Logic chosen for Haar ")
+			predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
+		case 2:
+			fmt.Println(" P2 Logic chosen for Haar ")
+			//predictionLogic = P2{name: "P2 Logic", cpl: 5.0, maxNumberOfBins: bin}
+		default:
+			fmt.Println("No valid logic chose : Default P1 ")
+			predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
+		}
+	*/
+	scale := int(math.Log2(float64(predictionWindow)))
+
+	// Logic decider
 
 	//  Scale for prediction
-	scale := int(math.Log2(float64(predictionWindow)))
-	fmt.Println("Bins configured for states", bin)
 
 	/// Map for the scale and corresponding min,max. This will be used for reconstruction
 	scaleMap := make(map[int][]float32)
