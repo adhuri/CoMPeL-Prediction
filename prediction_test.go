@@ -45,11 +45,11 @@ func TestPredictionEquidistantStates(t *testing.T) {
 
 		// Accuracy Checker to find +- accuracy Threshold
 		accuracyThreshold := float32(1)
-		withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, err := predictor.AccuracyChecker(actualDemand, predictedArray, W, accuracyThreshold)
+		withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, averageOverEstimate, averageUnderEstimate, err := predictor.AccuracyChecker(actualDemand, predictedArray, W, accuracyThreshold)
 		if err != nil {
 			t.Error("Accuracy checker failed ", err)
 		}
-		fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\n\n")
+		fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\nAverage Over Estimate %", averageOverEstimate, "\nAverage Under Estimate %", averageUnderEstimate, "\n\n")
 
 	}
 }

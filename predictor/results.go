@@ -55,8 +55,23 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 			}
 		}
 	}
-	averageOverEstimate = overEstimateSum / float32(overThresholdEstimateCount)
-	averageUnderEstimate = underEstimateSum / float32(underThresholdEstimateCount)
+
+	if overThresholdEstimateCount == 0 && underThresholdEstimateCount == 0 {
+		averageOverEstimate = 0
+		averageUnderEstimate = 0
+
+	} else if overThresholdEstimateCount == 0 && underThresholdEstimateCount != 0 {
+		averageOverEstimate = 0
+		averageUnderEstimate = underEstimateSum / float32(underThresholdEstimateCount)
+
+	} else if underThresholdEstimateCount == 0 && overThresholdEstimateCount != 0 {
+		averageOverEstimate = overEstimateSum / float32(overThresholdEstimateCount)
+		averageUnderEstimate = 0
+	} else {
+		averageOverEstimate = overEstimateSum / float32(overThresholdEstimateCount)
+		averageUnderEstimate = underEstimateSum / float32(underThresholdEstimateCount)
+	}
+
 	withingThresholdEstimatePercentage = (float32(withingThresholdEstimateCount) / float32(size)) * 100
 	underThresholdEstimatePercentage = (float32(underThresholdEstimateCount) / float32(size)) * 100
 	overThresholdEstimatePercentage = (float32(overThresholdEstimateCount) / float32(size)) * 100

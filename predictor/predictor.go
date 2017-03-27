@@ -22,6 +22,13 @@ type WaveletTransform struct {
 
 }
 
+type MaxPredict struct {
+	// Choose all predicted values = max of the sliding window
+	SlidingWindow    int // Parameter D to be used for knowing the windowsize of pastArray
+	PredictionWindow int // Parameter W to be used for knowing how many values to predict
+
+}
+
 // Predictor Funcion to predict which takes input Prediction Logic
 func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int) (predictedArray []float32, err error) {
 	fmt.Println("Predictor Name : ", p.GetPredictorName())
@@ -79,4 +86,20 @@ func isPowerOfTwo(num int) bool {
 		num = num / 2
 	}
 	return num == 1
+}
+
+// Max values
+
+func (mp *MaxPredict) GetPredictorName() string {
+	return "Haar Wavelet Transform"
+}
+
+//Used to Predict WaveletTransform
+func (mp *MaxPredict) Predict(pastArray []float32, bin int, logic int) (predictedArray []float32, err error) {
+	_, max := findMinMax(pastArray)
+	for i := 0; i < mp.PredictionWindow; i++ {
+		predictedArray = append(predictedArray, max)
+	}
+
+	return
 }

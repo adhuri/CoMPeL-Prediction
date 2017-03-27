@@ -39,56 +39,98 @@ func main() {
 				//for every container for CPU
 				{
 					//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
-					fetchedDataArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.28", "mysql", "cpu", time.Now().Unix(), SlidingWindowSize)
+					fetchedDataCPUArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.28", "mysql", "cpu", time.Now().Unix(), SlidingWindowSize)
 
 					if debug {
-						fmt.Println("Fetched Array ", fetchedDataArray)
+						fmt.Println("Fetched Array ", fetchedDataCPUArray)
 					}
 
 					// Perform prediction
-					predictedArray := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataArray, 1)
+					predictedArrayCPUHaar := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataCPUArray, 1)
 					if debug {
-						fmt.Println("\nPredicted Array ", predictedArray)
+						fmt.Println("\nPredicted Array - Haar ", predictedArrayCPUHaar)
 
 					}
 					// Check Accuracy of prediciton
 
 					//Pass predicted array to store to influx db
 
-					fmt.Println("Storing predicted array back to db ")
+					fmt.Println("Storing Haar predicted array back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu", predictedArray, alignedTimestamp)
+					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_haar", predictedArrayCPUHaar, alignedTimestamp)
 					if err1 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
+
+					// Using max predictor
+
+					// Perform prediction
+					predictedArrayCPUMax := maxPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataCPUArray, 1)
+					if debug {
+						fmt.Println("\nPredicted Array - Max ", predictedArrayCPUMax)
+
+					}
+					// Check Accuracy of prediciton
+
+					//Pass predicted array to store to influx db
+
+					fmt.Println("Storing Max predicted array back to db ")
+					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+
+					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_,max", predictedArrayCPUMax, alignedTimestamp)
+					if err2 != nil {
+						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
+					}
+
 				}
+
 				// for every container for memory
 				{
 					//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
-					fetchedDataArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.28", "mysql", "memory", time.Now().Unix(), SlidingWindowSize)
+					fetchedDataMemoryArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer("192.168.0.28", "mysql", "memory", time.Now().Unix(), SlidingWindowSize)
 
 					if debug {
-						fmt.Println("Fetched Array ", fetchedDataArray)
+						fmt.Println("Fetched Array ", fetchedDataMemoryArray)
 					}
 
 					// Perform prediction
-					predictedArray := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataArray, 1)
+					predictedArrayMemoryHaar := haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataMemoryArray, 1)
 					if debug {
-						fmt.Println("\nPredicted Array ", predictedArray)
+						fmt.Println("\nPredicted Array ", predictedArrayMemoryHaar)
 
 					}
 					// Check Accuracy of prediciton
 
 					//Pass predicted array to store to influx db
 
-					fmt.Println("Storing predicted array back to db ")
+					fmt.Println("Storing predicted memory array back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory", predictedArray, alignedTimestamp)
+					err1 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_haar", predictedArrayMemoryHaar, alignedTimestamp)
 					if err1 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
+
+					// Using max predictor
+					// Perform prediction
+					predictedArrayMemoryMax := maxPrediction(SlidingWindowSize, PredictionWindowSize, fetchedDataMemoryArray, 1)
+					if debug {
+						fmt.Println("\nPredicted Array - Max ", predictedArrayMemoryMax)
+
+					}
+					// Check Accuracy of prediciton
+
+					//Pass predicted array to store to influx db
+
+					fmt.Println("Storing Max predicted array back to db ")
+					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
+
+					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_,max", predictedArrayMemoryMax, alignedTimestamp)
+					if err2 != nil {
+						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
+					}
+
 				}
 
 				// Pass all predicted array to migration decider
@@ -117,10 +159,28 @@ func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData
 	return
 }
 
+func maxPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
+
+	bin := 0
+	// Logic to start prediction
+
+	max := predictor.MaxPredict{SlidingWindow: SlidingWindowSize, PredictionWindow: PredictionWindowSize}
+
+	// replace fetchedData with fetched Data from db
+
+	predictedArray, err := predictor.Predictor(&max, fetchedData, bin, logic)
+	if err != nil {
+		fmt.Println("Error received from Predictor ", err)
+		panic("Exiting due to Predictor not working")
+	}
+
+	return
+}
+
 func storeAgentDetails() (err error) {
 	// Get Agent Details from the fb
 	//Get Agent details - map of container_name : Agent IP
-	fetcher.GetAgentDetails()
+	//fetcher.GetAgentDetails()
 	return nil
 
 }
