@@ -36,7 +36,7 @@ func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int) (pred
 	if err != nil {
 		return
 	}
-	valueRaiser(predictedArray[:], 5)
+	valueRaiser(predictedArray[:], 0)
 	negativeValuesFixer(predictedArray[:])
 
 	return

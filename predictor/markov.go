@@ -100,7 +100,8 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int) int {
 
 		// Always send Higher values ( so no dip )
 
-		return random(lastElement+1, len(transitionMatrix[1]))
+		//return random(lastElement+1, len(transitionMatrix[1]))
+		return random(1, len(transitionMatrix[1])) // Any state
 
 	}
 

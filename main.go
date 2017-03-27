@@ -78,7 +78,7 @@ func main() {
 					fmt.Println("Storing Max predicted array back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_,max", predictedArrayCPUMax, alignedTimestamp)
+					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "cpu_max", predictedArrayCPUMax, alignedTimestamp)
 					if err2 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
@@ -126,7 +126,7 @@ func main() {
 					fmt.Println("Storing Max predicted array back to db ")
 					//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_,max", predictedArrayMemoryMax, alignedTimestamp)
+					err2 := DataFetcher.SavePredictedData("192.168.0.28", "mysql", "memory_max", predictedArrayMemoryMax, alignedTimestamp)
 					if err2 != nil {
 						fmt.Println("ERROR: Could not store predicted data using SavePredictedData")
 					}
