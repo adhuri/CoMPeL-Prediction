@@ -159,7 +159,7 @@ func getPredictedData(agentIp string, containerId string, metric string) []DataP
 		log.Fatal(err)
 	}
 
-	q := fmt.Sprintf("select value from predicted_container_data where agent = '%s' and container = '%s' and metric = '%s'", agentIp, containerId, metric)
+	q := fmt.Sprintf("select value from predicted_container_data where agent = '%s' and container = '%s' and metric = '%s' ORDER BY time DESC LIMIT 11000", agentIp, containerId, metric)
 
 	res, err := queryDB(c, q)
 	if err != nil {
@@ -169,7 +169,7 @@ func getPredictedData(agentIp string, containerId string, metric string) []DataP
 		panic("Result is empty for given query")
 	}
 
-	fmt.Println(res)
+	//fmt.Println(res)
 
 	if len(res[0].Series) == 0 {
 		panic("Series is empty for given query")
@@ -197,7 +197,7 @@ func getPredictedData(agentIp string, containerId string, metric string) []DataP
 			dataPoint := DataPoint{
 				Timestamp:  tm,
 				Value:      float32(floatValue),
-				MetricType: "cpu",
+				MetricType: metric,
 			}
 			dataPoints = append(dataPoints, dataPoint)
 		}
