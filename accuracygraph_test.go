@@ -38,7 +38,7 @@ func TestAccuracyForPredictedData(t *testing.T) {
 	for i := 0; i < numberOfSlidingWindows; i++ {
 		fmt.Println("For Start time ", startTime, "\n End Time ", endTime)
 
-		res1, err := getResults("192.168.0.28", "mysql", "cpu", "cpu_haar_P1", slidingWindow, startTime, endTime)
+		res1, err := getResults("192.168.0.28", "mysql", "cpu", "cpu_haar_P1_goup", slidingWindow, startTime, endTime)
 		if err != nil {
 			t.Error(err)
 		}
