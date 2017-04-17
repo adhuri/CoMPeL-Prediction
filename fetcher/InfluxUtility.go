@@ -11,16 +11,17 @@ import (
 )
 
 const (
-	MyDB     = "square_holes"
-	username = "bubba"
-	password = "bumblebeetuna"
+	MyDB            = "square_holes"
+	username        = "bubba"
+	password        = "bumblebeetuna"
+	InfluxDBAddress = "http://influxdb:8086"
 )
 
 func getConnection() influx.Client {
 
 	// Create a new HTTPClient
 	conn, err := influx.NewHTTPClient(influx.HTTPConfig{
-		Addr:     "http://localhost:10090",
+		Addr:     InfluxDBAddress,
 		Username: username,
 		Password: password,
 	})
@@ -52,7 +53,7 @@ func queryDB(clnt influx.Client, cmd string) (res []influx.Result, err error) {
 func getData(agentIp string, containerId string, metric string) []DataPoint {
 
 	c, err := influx.NewHTTPClient(influx.HTTPConfig{
-		Addr:     "http://localhost:10090",
+		Addr:     InfluxDBAddress,
 		Username: username,
 		Password: password,
 	})
@@ -148,7 +149,7 @@ func saveData(dataPoints []DataPoint, conn influx.Client) error {
 func getPredictedData(agentIp string, containerId string, metric string) []DataPoint {
 
 	c, err := influx.NewHTTPClient(influx.HTTPConfig{
-		Addr:     "http://localhost:10090",
+		Addr:     InfluxDBAddress,
 		Username: username,
 		Password: password,
 	})
