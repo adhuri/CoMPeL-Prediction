@@ -1,0 +1,20 @@
+---
+# This playbook builds and deploys server and client on specified ports on respective hosts
+# Copy keys using `ssh-copy-id username@ip`
+
+- hosts: compel-server
+  vars:
+    module_name: "compel-prediction"
+    go_path: "{{ lookup('env','GOPATH') }}"
+  tasks:
+    - name: Deploy {{ module_name }}-prediction on compel
+      copy:
+        src: /{{ go_path }}/bin/{{ module_name }}-prediction
+        dest: ~/{{ module_name }}-prediction
+        mode: "u+x"
+
+    # - name: Start {{ module_name }}-server #on port {{server_port}}
+    #   #shell: ~/{{ module_name }}-server {{server_port}}
+    #   shell: ~/{{ module_name }}-server > ~/{{ module_name }}-server.log &
+
+      #changed_when: false
