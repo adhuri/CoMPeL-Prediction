@@ -4,13 +4,13 @@
 
 - hosts: compel-server
   vars:
-    module_name: "compel-prediction"
+    module_name: "Compel-Prediction"
     go_path: "{{ lookup('env','GOPATH') }}"
   tasks:
-    - name: Deploy {{ module_name }}-prediction on compel
+    - name: Deploy {{ module_name }} on compel
       copy:
-        src: /{{ go_path }}/bin/{{ module_name }}-prediction
-        dest: ~/{{ module_name }}-prediction
+        src: /{{ go_path }}/bin/{{ module_name }}
+        dest: ~/{{ module_name }}
         mode: "u+x"
 
     # - name: Start {{ module_name }}-server #on port {{server_port}}

@@ -26,6 +26,10 @@ type ResultForOneDuration struct {
 }
 
 func TestAccuracyForPredictedData(t *testing.T) {
+
+	TestIp := "10.10.3.183"
+	TestContainer := "d122412887e4"
+
 	cpuHaarP1Results := Results{name: "CPU Haar P1"}
 
 	numberOfSlidingWindows := 8
@@ -38,7 +42,7 @@ func TestAccuracyForPredictedData(t *testing.T) {
 	for i := 0; i < numberOfSlidingWindows; i++ {
 		fmt.Println("For Start time ", startTime, "\n End Time ", endTime)
 
-		res1, err := getResults("192.168.0.28", "mysql", "cpu", "cpu_haar_P1_goup", slidingWindow, startTime, endTime)
+		res1, err := getResults(TestIp, TestContainer, "cpu", "cpu_haar_P1_goup", slidingWindow, startTime, endTime)
 		if err != nil {
 			t.Error(err)
 		}
