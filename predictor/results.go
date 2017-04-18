@@ -3,17 +3,21 @@ package predictor
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
-///Function to check accuracy +- accuracy  Threshold
-func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, accuracyThreshold float32) (withingThresholdEstimatePercentage float32, underThresholdEstimatePercentage float32, overThresholdEstimatePercentage float32, e error) {
+var resultsDebug = true
+
+///AccuracyChecker ... Function to check accuracy +- accuracy  Threshold
+func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, accuracyThreshold float32) (withingThresholdEstimatePercentage float32, underThresholdEstimatePercentage float32, overThresholdEstimatePercentage float32, rmseOverEstimate float32, rmseUnderEstimate float32, e error) {
 
 	//actualArray := []float32{13, 12, 11.9, 13, 13, 13, 13, 11, 13, 12, 11.9, 12, 13, 13, 12, 12, 12, 13, 12.9, 12, 13, 11, 13, 13, 13, 12, 11.9, 13, 13, 12, 13, 12, 13, 13, 13, 13, 13, 12.9, 13, 13, 13, 12, 14, 13, 13, 11.9, 12, 13, 13, 13, 13, 12, 11.9, 12, 12, 13, 12, 12, 13, 12, 9, 10.9, 12, 13}
 
 	var withingThresholdEstimateCount, underThresholdEstimateCount, overThresholdEstimateCount int
+	var underEstimateSum, overEstimateSum float64
 
 	if size != len(predictedArray) || size > len(actualArray) {
-		return 0, 0, 0, errors.New("Len of predicted Array or actualArray is not same as prediction window size")
+		return 0, 0, 0, 0, 0, errors.New("Len of predicted Array or actualArray is not same as prediction window size")
 	}
 
 	if len(actualArray) < size {
@@ -21,7 +25,7 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 		actualArray = actualArray[:size]
 
 	}
-	if debug {
+	if resultsDebug {
 		fmt.Println("Accuracy set as +-", accuracyThreshold)
 		fmt.Print("\nActual Array ", actualArray, "\n")
 
@@ -31,27 +35,44 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 		fmt.Print("\n i\tActual\tPredicted", "\n")
 	}
 
-	for i, el := range predictedArray {
+	for i, predictedValue := range predictedArray {
 
-		if el <= (actualArray[i]+accuracyThreshold) && el >= (actualArray[i]-accuracyThreshold) {
+		if predictedValue <= (actualArray[i]+accuracyThreshold) && predictedValue >= (actualArray[i]-accuracyThreshold) {
 			// withing Threshold Estimate Count
 			withingThresholdEstimateCount++
 
-		} else if el < (actualArray[i] - accuracyThreshold) {
+		} else if predictedValue < (actualArray[i] - accuracyThreshold) {
 			//under Threshold Estimate Count
 			underThresholdEstimateCount++
-			if debug {
-				fmt.Print("- ", i, "\t", actualArray[i], "\t", el, "\n")
+			underEstimateSum += math.Pow(float64(actualArray[i]-predictedValue), 2) // RMSE
+			if resultsDebug {
+				fmt.Print("- ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}
 
-		} else if el > (actualArray[i] + accuracyThreshold) {
+		} else if predictedValue > (actualArray[i] + accuracyThreshold) {
 			//over Threshold Estimate Count
 			overThresholdEstimateCount++
-
-			if debug {
-				fmt.Print("+ ", i, "\t", actualArray[i], "\t", el, "\n")
+			overEstimateSum += math.Pow(float64(predictedValue-actualArray[i]), 2) //RMSE
+			if resultsDebug {
+				fmt.Print("+ ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 			}
 		}
+	}
+
+	if overThresholdEstimateCount == 0 && underThresholdEstimateCount == 0 {
+		rmseOverEstimate = 0
+		rmseUnderEstimate = 0
+
+	} else if overThresholdEstimateCount == 0 && underThresholdEstimateCount != 0 {
+		rmseOverEstimate = 0
+		rmseUnderEstimate = float32(math.Sqrt(underEstimateSum / float64(underThresholdEstimateCount)))
+
+	} else if underThresholdEstimateCount == 0 && overThresholdEstimateCount != 0 {
+		rmseOverEstimate = float32(math.Sqrt(overEstimateSum / float64(overThresholdEstimateCount)))
+		rmseUnderEstimate = 0
+	} else {
+		rmseOverEstimate = float32(math.Sqrt(overEstimateSum / float64(overThresholdEstimateCount)))
+		rmseUnderEstimate = float32(math.Sqrt(underEstimateSum / float64(underThresholdEstimateCount)))
 	}
 
 	withingThresholdEstimatePercentage = (float32(withingThresholdEstimateCount) / float32(size)) * 100

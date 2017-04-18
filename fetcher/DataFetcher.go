@@ -78,7 +78,7 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	if len(points) > numberOfPoints {
 		// Trim the slice if we have more points than asked for
 		numberOfExtraPoints := len(points) - numberOfPoints
-		fmt.Println(len(points[numberOfExtraPoints:]))
+		//fmt.Println(len(points[numberOfExtraPoints:]))
 		return points[numberOfExtraPoints:], time
 	} else if len(points) < numberOfPoints {
 		// If points are less than required then pad 0 at the start
@@ -89,7 +89,7 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		}
 		remainingPoints = append(remainingPoints, points...)
 
-		fmt.Println(len(remainingPoints))
+		//fmt.Println(len(remainingPoints))
 		return remainingPoints, time
 
 	}
@@ -140,8 +140,10 @@ func (dataFetcher *DataFetcher) GetMetricDataForAccuracy(agentIp string, contain
 	var points []float32
 	for i := startTimeStamp; i <= endTimeStamp; i++ {
 		if value, present := dataPointMap[i]; present {
+			//fmt.Println("appending value")
 			points = append(points, value)
 		} else {
+			//fmt.Println("appending value")
 			points = append(points, -1) //some point might have 0 value
 		}
 	}
@@ -185,23 +187,39 @@ func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId str
 
 	dataPointMap := make(map[int64]float32)
 
-	// var latestTimesStamp int64
-	// var oldestTimesStamp int64
+	var latestTimesStamp int64
+	var oldestTimesStamp int64
 
-	for _, point := range dataPoints {
+	for i, point := range dataPoints {
 		dataPointMap[point.Timestamp] = point.Value
-		fmt.Println(point.Timestamp)
+
+		//fmt.Println(point.Value)
+		if i == 0 {
+			oldestTimesStamp = point.Timestamp
+		}
+		if point.Timestamp > latestTimesStamp {
+			latestTimesStamp = point.Timestamp
+		}
+
+		if point.Timestamp < oldestTimesStamp {
+			oldestTimesStamp = point.Timestamp
+		}
+
 	}
+	fmt.Println("start,end", startTimeStamp, endTimeStamp)
+	fmt.Println("Oldest ", oldestTimesStamp, "\n latest ", latestTimesStamp)
 
 	var points []float32
 	for i := startTimeStamp; i <= endTimeStamp; i++ {
 		if value, present := dataPointMap[i]; present {
+			//fmt.Println("appending value")
 			points = append(points, value)
 		} else {
+			//fmt.Println("appending 0s")
 			points = append(points, 0) //some point might have 0 value
 		}
 	}
-
+	//fmt.Println(dataPointMap)
 	return points, nil
 
 }
