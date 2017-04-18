@@ -5,7 +5,7 @@ import (
 	"time"
 
 	fetcher "github.com/adhuri/Compel-Prediction/fetcher"
-	predictor "github.com/adhuri/Compel-Prediction/predictor"
+	"github.com/adhuri/Compel-Prediction/predictor"
 )
 
 var debug = true
@@ -28,7 +28,7 @@ func main() {
 
 				fmt.Println("Predicting for time ", predictionTimer)
 				//Store Container_name to IP mapping from monitoring server
-				err := storeAgentDetails()
+				err := storeAgentDetails(DataFetcher)
 				if err != nil {
 					fmt.Println("Error: Unable to store Agent details ", err)
 				}
@@ -117,10 +117,26 @@ func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData
 	return
 }
 
-func storeAgentDetails() (err error) {
+func storeAgentDetails(dataFetcher *fetcher.DataFetcher) (err error) {
 	// Get Agent Details from the fb
 	//Get Agent details - map of container_name : Agent IP
-	fetcher.GetAgentDetails()
+	dataFetcher.GetAgentInformation("127.0.0.1", "9091")
 	return nil
 
 }
+
+// func TimeTrack(start time.Time, name string) {
+// 	elapsed := time.Since(start)
+// 	fmt.Println(name, " took ", elapsed, "\n")
+// }
+//
+// func main() {
+// 	defer TimeTrack(time.Now(), "REST API")
+// 	DataFetcher := fetcher.NewDataFetcher()
+// 	response, err := DataFetcher.GetAgentInformation("127.0.0.1", "9091")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	fmt.Println(*response)
+//
+// }
