@@ -24,11 +24,12 @@ func main() {
 		case <-predictionTimer:
 			{
 
-				fmt.Println("Predicting for time ", predictionTimer)
+				fmt.Println("Predicting for time ", time.Now())
 
 				ContainerInfo, err := DataFetcher.GetAgentInformation("127.0.0.1", "9091")
 				if err != nil {
 					fmt.Println("Error GetAgentInformation did not return client information", err)
+					continue
 				}
 				fmt.Println("Number of Agents for prediction ", len(ContainerInfo.Clients))
 				metrics := []string{"cpu", "memory"}
