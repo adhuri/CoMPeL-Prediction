@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/adhuri/Compel-Migration/protocol"
 	"github.com/adhuri/Compel-Prediction/fetcher"
 	predictor "github.com/adhuri/Compel-Prediction/predictor"
 )
@@ -17,7 +18,8 @@ func main() {
 	predictionFrequency := time.Second * 10 // in seconds
 	fmt.Println("Prediction Frequency is ", predictionFrequency)
 	DataFetcher := fetcher.NewDataFetcher()
-
+	var timestamp int64
+	var predictedValues []float32
 	predictionTimer := time.NewTicker(predictionFrequency).C
 	for {
 		select {
@@ -34,16 +36,35 @@ func main() {
 				fmt.Println("Number of Agents for prediction ", len(ContainerInfo.Clients))
 				metrics := []string{"cpu", "memory"}
 
+				agentPredictions := []protocol.ClientInfo{}
+
 				for _, agent := range ContainerInfo.Clients {
+
+					containerPredictions := []protocol.ContainerInfo{}
 
 					for _, containerID := range agent.Containers {
 						// For every agent Container
+						cpuPredictions := []float32{}
+						memoryPredictions := []float32{}
 						for _, metric := range metrics {
-							PredictAndStore(DataFetcher, string(agent.ClientIp), string(containerID), metric, SlidingWindowSize, PredictionWindowSize)
-						}
+							predictedValues, timestamp = PredictAndStore(DataFetcher, string(agent.ClientIp), string(containerID), metric, SlidingWindowSize, PredictionWindowSize)
+							if metric == "cpu" {
+								cpuPredictions = predictedValues
 
+							} else if metric == "memory" {
+								memoryPredictions = predictedValues
+							}
+						}
+						containerInfo := protocol.NewContainerInfo(string(containerID), cpuPredictions, memoryPredictions)
+						containerPredictions = append(containerPredictions, *containerInfo)
 					}
+					clientInfo := protocol.NewClientInfo(string(agent.ClientIp), containerPredictions)
+					agentPredictions = append(agentPredictions, *clientInfo)
 				}
+
+				messageToSendToMigration := protocol.NewPredictionData(timestamp, agentPredictions)
+
+				sendDataTOMigration(messageToSendToMigration, log)
 			}
 
 		}
@@ -51,20 +72,23 @@ func main() {
 
 }
 
-func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) {
+func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) ([]float32, int64) {
 	fmt.Println("Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
 
 	predictors := []string{"haar", "haargoup", "max"}
+	var predictedArray []float32
+	var timestamp int64
 	for _, predictor := range predictors {
 
 		fmt.Println("For predictor ", predictor)
 		//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
-		fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, time.Now().Unix(), SlidingWindowSize)
+		timestamp = time.Now().Unix()
+		fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize)
 		if debug {
 			fmt.Println("Fetched Array for metric", metric, "-", fetchedArray)
 		}
 
-		var predictedArray = []float32{}
+		predictedArray = []float32{}
 		if predictor == "haar" {
 			// Perform prediction
 			predictedArray = haarPrediction(SlidingWindowSize, PredictionWindowSize, fetchedArray, 1)
@@ -90,9 +114,8 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 		if err1 != nil {
 			fmt.Println("ERROR: Could not store predicted data using SavePredictedData for predictor ", predictor)
 		}
-
 	}
-
+	return predictedArray, timestamp
 }
 
 func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
