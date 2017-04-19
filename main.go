@@ -6,7 +6,6 @@ import (
 
 	"github.com/adhuri/Compel-Prediction/fetcher"
 	predictor "github.com/adhuri/Compel-Prediction/predictor"
-	restAPI "github.com/adhuri/Compel-Prediction/restAPI"
 )
 
 var debug = false
@@ -17,6 +16,7 @@ func main() {
 	PredictionWindowSize := 128             //PredictionWindow
 	predictionFrequency := time.Second * 10 // in seconds
 	fmt.Println("Prediction Frequency is ", predictionFrequency)
+	DataFetcher := fetcher.NewDataFetcher()
 
 	predictionTimer := time.NewTicker(predictionFrequency).C
 	for {
@@ -26,16 +26,19 @@ func main() {
 
 				fmt.Println("Predicting for time ", predictionTimer)
 
-				ContainerInfo := restAPI.GetContainerDetails().Clients
-				fmt.Println("Number of Agents for prediction ", len(ContainerInfo))
+				ContainerInfo, err := DataFetcher.GetAgentInformation("127.0.0.1", "9091")
+				if err != nil {
+					fmt.Println("Error GetAgentInformation did not return client information", err)
+				}
+				fmt.Println("Number of Agents for prediction ", len(ContainerInfo.Clients))
 				metrics := []string{"cpu", "memory"}
 
-				for _, agent := range ContainerInfo {
+				for _, agent := range ContainerInfo.Clients {
 
 					for _, containerID := range agent.Containers {
 						// For every agent Container
 						for _, metric := range metrics {
-							PredictAndStore(string(agent.ClientIp), string(containerID), metric, SlidingWindowSize, PredictionWindowSize)
+							PredictAndStore(DataFetcher, string(agent.ClientIp), string(containerID), metric, SlidingWindowSize, PredictionWindowSize)
 						}
 
 					}
@@ -47,8 +50,7 @@ func main() {
 
 }
 
-func PredictAndStore(agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) {
-	DataFetcher := fetcher.NewDataFetcher()
+func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) {
 	fmt.Println("Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
 
 	predictors := []string{"haar", "haargoup", "max"}

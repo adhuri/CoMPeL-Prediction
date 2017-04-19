@@ -1,8 +1,13 @@
 package fetcher
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"sync"
+
+	monitorProtocol "github.com/adhuri/Compel-Monitoring/protocol"
+	"gopkg.in/resty.v0"
 )
 
 type DataFetcher struct {
@@ -16,8 +21,16 @@ func NewDataFetcher() *DataFetcher {
 	}
 }
 
-func (dataFetcher *DataFetcher) GetAgentInformation() {
+func (dataFetcher *DataFetcher) GetAgentInformation(monitoringServer, restPort string) (*monitorProtocol.QueryResponse, error) {
+	resp, err := resty.R().Get("http://" + monitoringServer + ":" + restPort + "/query")
+	if err != nil {
+		return nil, err
+	}
+	queryResponse := monitorProtocol.QueryResponse{}
 
+	pCache := bytes.NewBuffer(resp.Body())
+	json.NewDecoder(pCache).Decode(&queryResponse)
+	return &queryResponse, nil
 }
 
 func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
@@ -137,7 +150,6 @@ func (dataFetcher *DataFetcher) GetMetricDataForAccuracy(agentIp string, contain
 
 	fillMissingValues(points)
 
-	fmt.Println(points)
 	return points, nil
 
 }
@@ -180,6 +192,7 @@ func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId str
 
 	for i, point := range dataPoints {
 		dataPointMap[point.Timestamp] = point.Value
+
 		//fmt.Println(point.Value)
 		if i == 0 {
 			oldestTimesStamp = point.Timestamp
