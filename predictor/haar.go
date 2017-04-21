@@ -39,15 +39,15 @@ type P2 struct {
 
 // Haar ...  pastArray , bin is max numberStates to generate , logic numbers
 func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *logrus.Logger) [][]float32 {
-	log.Debugln("Max Bins configured for states", bin)
+	log.Infoln("Max Bins configured for states", bin)
 
 	var goUp = false
 	switch logic {
 	case 1:
-		log.Debugln("P1 Logic chosen ")
+		log.Infoln("P1 Logic chosen ")
 		goUp = false
 	case 2:
-		log.Debugln("P1 Go Up Logic Chosen")
+		log.Infoln("P1 Go Up Logic Chosen")
 		goUp = true
 	default:
 		log.Debugln("No valid logic chosen - Default P1 Logic chosen ")
@@ -55,6 +55,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *lo
 	}
 
 	scale := int(math.Log2(float64(predictionWindow)))
+	log.Infoln("Haar wavelets scales ", scale)
 
 	// Logic decider
 
@@ -74,6 +75,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *lo
 	for len(ApproximateCoefficient) > 1 && scaleNum <= scale {
 		var DetailedCoefficent []float32
 		ApproximateCoefficient, DetailedCoefficent = haarLevel(ApproximateCoefficient)
+
 		log.Debugln("\n Haar Level ", scaleNum, "\t -|- \t", ApproximateCoefficient, "\t -|- \t", DetailedCoefficent, "\n")
 
 		stateDeciderD := make([]float32, bin+1)

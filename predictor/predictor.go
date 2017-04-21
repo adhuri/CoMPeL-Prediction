@@ -29,7 +29,7 @@ type MaxPredict struct {
 
 // Predictor Funcion to predict which takes input Prediction Logic
 func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int, log *logrus.Logger) (predictedArray []float32, err error) {
-	log.Debugln("Predictor Name : ", p.GetPredictorName())
+	log.Infoln("Predictor Name : ", p.GetPredictorName())
 	predictedArray, err = p.Predict(pastArray, bin, logic, log)
 	if err != nil {
 		return

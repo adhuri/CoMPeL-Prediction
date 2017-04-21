@@ -31,7 +31,7 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 	log.Debug("\n---------------------- ", "\n")
 	log.Debug("\nNon Matching elements ", "\n")
 	log.Debug("\n---------------------- ", "\n")
-	log.Debug("\n i\tActual\tPredicted", "\n")
+	log.Debug("i\tActual\tPredicted", "\n")
 
 	for i, predictedValue := range predictedArray {
 
@@ -43,14 +43,14 @@ func AccuracyChecker(actualArray []float32, predictedArray []float32, size int, 
 			//under Threshold Estimate Count
 			underThresholdEstimateCount++
 			underEstimateSum += math.Pow(float64(actualArray[i]-predictedValue), 2) // RMSE
-			log.Debug("- ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
 
 		} else if predictedValue > (actualArray[i] + accuracyThreshold) {
 			//over Threshold Estimate Count
 			overThresholdEstimateCount++
 			overEstimateSum += math.Pow(float64(predictedValue-actualArray[i]), 2) //RMSE
-			log.Debug("+ ", i, "\t", actualArray[i], "\t", predictedValue, "\n")
+
 		}
+		log.Debug("- ", i, "\t", actualArray[i], "\t", predictedValue, "")
 	}
 
 	if overThresholdEstimateCount == 0 && underThresholdEstimateCount == 0 {
@@ -87,7 +87,7 @@ func negativeValuesFixer(result []float32, log *logrus.Logger) {
 		}
 	}
 
-	log.Warnln("Fixed negative values in predicted array ", fixedCount)
+	log.Debugln("Fixed negative values in predicted array ", fixedCount)
 
 }
 
@@ -107,5 +107,5 @@ func valueRaiser(result []float32, valueRaisedPercentage float32, log *logrus.Lo
 		// }
 
 	}
-	log.Warnln("Value raised in predicted by ", valueRaisedPercentage, "%")
+	log.Infoln("Value raised in predicted by ", valueRaisedPercentage, "%")
 }

@@ -29,7 +29,7 @@ func TestAccuracyForPredictedData(t *testing.T) {
 	TestIp := "10.10.3.183"
 	TestContainer := "d122412887e4"
 
-	cpuHaarP1Results := Results{name: "CPU Haar P1"}
+	predictionResults := Results{name: "CPU Haar P1"}
 
 	numberOfSlidingWindows := 8
 	slidingWindow := 1024
@@ -37,16 +37,17 @@ func TestAccuracyForPredictedData(t *testing.T) {
 
 	endTime := time.Now().Add(time.Minute * -1)
 	startTime := endTime.Add(-1 * time.Second * slidingWindowDuration)
-
+	log.Infoln("================ Accuracy Graph Data Generator ===============")
+	log.Infoln("Running Prediction ", predictionResults.name, " for ", numberOfSlidingWindows, " times")
 	for i := 0; i < numberOfSlidingWindows; i++ {
-		log.Infoln("For Start time ", startTime, "\n End Time ", endTime)
+		log.Infoln("For Start time :", startTime, ", End Time :", endTime)
 
 		res1, err := getResults(TestIp, TestContainer, "cpu", "cpu_haar_P1_goup", slidingWindow, startTime, endTime)
 		if err != nil {
 			t.Error(err)
 		}
 
-		cpuHaarP1Results.result = append(cpuHaarP1Results.result, res1)
+		predictionResults.result = append(predictionResults.result, res1)
 
 		endTime = startTime
 
@@ -54,7 +55,7 @@ func TestAccuracyForPredictedData(t *testing.T) {
 
 	}
 
-	resultPrinter(cpuHaarP1Results)
+	resultPrinter(predictionResults)
 
 }
 
@@ -87,7 +88,7 @@ func getResults(ip string, containerName string, metric string, predictedMetric 
 }
 
 func resultPrinter(r Results) {
-	log.Infoln("-- Results for ", r.name)
+	log.Infoln("=============Results for ", r.name, "===============")
 	var startTimestampArray []int64
 	var withinThresholdEstimatePercentArray []float32
 	var overThresholdEstimatePercentArray []float32
@@ -105,12 +106,12 @@ func resultPrinter(r Results) {
 
 	}
 	log.Infoln("----------------------------------------------------------------------------")
-	log.Debugln("startTimestampArray ", startTimestampArray)
+	log.Infoln("startTimestampArray ", startTimestampArray)
 
 	log.Infoln("withinThresholdEstimatePercentArray ", withinThresholdEstimatePercentArray)
 	log.Infoln("overThresholdEstimatePercentArray", overThresholdEstimatePercentArray)
 	log.Infoln("underThresholdEstimatePercentArray", underThresholdEstimatePercentArray)
 	log.Infoln("rmseOverThresholdEstimateArray", rmseOverThresholdEstimateArray)
-	log.Infoln("rmseUnderThresholdEstimateArray", rmseUnderThresholdEstimateArray)
+	log.Infoln("rmseUnderThresholdEstimateArray", rmseUnderThresholdEstimateArray, "\n\n")
 
 }
