@@ -46,7 +46,7 @@ func main() {
 	SlidingWindowSize := 2048                                                    //SlidingWindow
 	PredictionWindowSize := 128                                                  //PredictionWindow
 	predictionFrequency := time.Second * time.Duration(*predictionFrequencyFlag) // in seconds
-	log.Infoln("Prediction Frequency is ", predictionFrequency, " in seconds")
+	log.Infoln("Prediction Frequency is ", predictionFrequency)
 	DataFetcher := fetcher.NewDataFetcher()
 	var timestamp int64
 	var predictedValues []float32
@@ -56,14 +56,14 @@ func main() {
 		case <-predictionTimer:
 			{
 				predictionTime := time.Now()
-				log.Infoln("Predicting for time : ", predictionTime.Format("2006-01-02 15:04:05"), " , Unix Time : ", predictionTime.Unix())
+				log.Infoln("Predicting for time : ", predictionTime.Format("2006-01-02 15:04:05"), " , Unix Time : ", predictionTime.Unix(), "\n")
 
 				ContainerInfo, err := DataFetcher.GetAgentInformation("127.0.0.1", "9091")
 				if err != nil {
 					log.Errorln("Error GetAgentInformation did not return client information ", err)
 					continue
 				}
-				log.Debugln("Number of Agents for prediction ", len(ContainerInfo.Clients))
+				log.Infoln("=> Number of Agents for prediction ", len(ContainerInfo.Clients), "\n")
 				metrics := []string{"cpu", "memory"}
 
 				agentPredictions := []protocol.ClientInfo{}

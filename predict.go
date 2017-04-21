@@ -5,10 +5,11 @@ import (
 
 	"github.com/adhuri/Compel-Prediction/fetcher"
 	predictor "github.com/adhuri/Compel-Prediction/predictor"
+	"github.com/adhuri/Compel-Prediction/utils"
 )
 
 func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) ([]float32, int64) {
-	log.Debugln("Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
+	log.Infoln("-> Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
 
 	predictors := []string{"haar", "haargoup", "max"}
 	var predictedArray []float32
@@ -51,7 +52,15 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 }
 
 func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
-
+	displayText := "predict.go:haarPrediction()"
+	switch logic {
+	case 1:
+		displayText = displayText + " ,logic P1"
+	case 2:
+		displayText = displayText + " ,logic P1 Go Up"
+	}
+	defer utils.TimeTrack(time.Now(), displayText, log)
+	//defer utils.TimeTrack(time.Now(), "Filename.go-FunctionName",log)
 	bin := 30
 	// Logic to start prediction
 
@@ -69,7 +78,7 @@ func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData
 }
 
 func maxPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
-
+	defer utils.TimeTrack(time.Now(), "predict.go-maxPrediction()", log)
 	bin := 0
 	// Logic to start prediction
 

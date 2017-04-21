@@ -1,10 +1,6 @@
 package predictor
 
-import (
-	"errors"
-
-	"github.com/Sirupsen/logrus"
-)
+import "github.com/Sirupsen/logrus"
 
 //Predictor Interface for any predictor
 type PredictionLogic interface {
@@ -29,7 +25,7 @@ type MaxPredict struct {
 
 // Predictor Funcion to predict which takes input Prediction Logic
 func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int, log *logrus.Logger) (predictedArray []float32, err error) {
-	log.Infoln("Predictor Name : ", p.GetPredictorName())
+	log.Infoln("--> Predictor Name : ", p.GetPredictorName())
 	predictedArray, err = p.Predict(pastArray, bin, logic, log)
 	if err != nil {
 		return
@@ -45,46 +41,36 @@ func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int, log *
 	return
 }
 
-func (haar *WaveletTransform) GetPredictorName() string {
-	return "Haar Wavelet Transform"
-}
-
-//Used to Predict WaveletTransform
-func (haar *WaveletTransform) Predict(pastArray []float32, bin int, logic int, log *logrus.Logger) (predictedArray []float32, err error) {
-	// Check the Sliding windowsize
-	//if even continue
-
-	if !isPowerOfTwo(haar.SlidingWindow) {
-		log.Debugln("Sliding window size configured ", haar.SlidingWindow)
-		return predictedArray, errors.New("  Sliding number has to be power of 2 for Haar Wavelet")
-	}
-	// Ignore the
-	if len(pastArray) < haar.SlidingWindow {
-		log.Debugln("No Prediction - Length of past array is smaller than Sliding Window ", len(pastArray))
-		return
-	}
-	//Trim additional elements - Redundant code but dont believe other module - Safe side check
-	if len(pastArray) > haar.SlidingWindow {
-		log.Debugln("Length of pastarray is larger than Sliding Window - Trimming ")
-		pastArray = append(pastArray[len(pastArray)-haar.SlidingWindow:]) // To trim from totallength- sliding window to end of array
-	}
-
-	predictedCoefficients := Haar(pastArray, haar.PredictionWindow, bin, logic, log)
-
-	log.Debugln("Predicted coefficients array: ", predictedCoefficients)
-
-	invertedArray := InverseHaar(predictedCoefficients)
-	predictedArray = invertedArray
-	return
-}
-
-// Utility function to check if number is power of two
-func isPowerOfTwo(num int) bool {
-	for num >= 2 {
-		if num%2 != 0 {
-			return false
+//Prediction is not accurate and for near zero values could predict negative Values. Fixing them to zero
+// All it means is the value approaches zero
+func negativeValuesFixer(result []float32, log *logrus.Logger) {
+	fixedCount := 0
+	for i, el := range result {
+		if el < 0 {
+			result[i] = 0
+			fixedCount += 1
 		}
-		num = num / 2
 	}
-	return num == 1
+
+	log.Debugln("Fixed negative values in predicted array ", fixedCount)
+
+}
+
+// To create a variation for under prediction
+func valueRaiser(result []float32, valueRaisedPercentage float32, log *logrus.Logger) {
+	//_, max := findMinMax(result)
+	//fromMaxValueEnhancer := 100 - max
+	for i, _ := range result {
+		fromValueRaiser := (valueRaisedPercentage / 100) * (result[i])
+
+		result[i] = result[i] + fromValueRaiser
+
+		// if fromMaxValueEnhancer > fromValueRaiser {
+		// 	result[i] = result[i] + fromMaxValueEnhancer
+		// } else {
+		// 	result[i] = result[i] + fromValueRaiser
+		// }
+
+	}
+	log.Infoln("Value raised in predicted by ", valueRaisedPercentage, "%")
 }
