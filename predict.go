@@ -9,6 +9,8 @@ import (
 )
 
 func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metric string, SlidingWindowSize int, PredictionWindowSize int) ([]float32, int64) {
+	defer utils.TimeTrack(time.Now(), "predict.go-PredictAndStore() - For a container - Total time for all predictors & store in db", log)
+
 	log.Infoln("-> Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
 
 	predictors := []string{"haar", "haargoup", "max"}
@@ -43,9 +45,11 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 		log.Debugln("Storing ", predictor, " predicted array  back to db ")
 		//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
 
-		err1 := DataFetcher.SavePredictedData(agentIP, containerID, metric+predictor, predictedArray, alignedTimestamp)
+		err1 := DataFetcher.SavePredictedData(agentIP, containerID, metric+predictor, predictedArray, alignedTimestamp, log)
 		if err1 != nil {
 			log.Errorln("ERROR: Could not store predicted data using SavePredictedData for predictor ", predictor)
+		} else {
+			log.Debugln("Stored predicted array to database")
 		}
 	}
 	return predictedArray, timestamp

@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"sync"
+	"time"
 
+	"github.com/Sirupsen/logrus"
 	monitorProtocol "github.com/adhuri/Compel-Monitoring/protocol"
+	"github.com/adhuri/Compel-Prediction/utils"
 	"gopkg.in/resty.v0"
 )
 
@@ -153,7 +156,8 @@ func (dataFetcher *DataFetcher) GetMetricDataForAccuracy(agentIp string, contain
 
 }
 
-func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) error {
+func (dataFetcher *DataFetcher) SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64, log *logrus.Logger) error {
+	defer utils.TimeTrack(time.Now(), "DataFetcher.go-SavePredictedData() - Storing predicted data ", log)
 
 	var dataPoints []DataPoint
 	for _, value := range predictedValues {

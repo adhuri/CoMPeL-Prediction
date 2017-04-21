@@ -35,7 +35,7 @@ func init() {
 func main() {
 
 	//Init logging
-	predictionFrequencyFlag := flag.Int64("pf", 10, "Prediction frequency in seconds")
+	predictionFrequencyFlag := flag.Int64("pf", 20, "Prediction frequency in seconds")
 
 	flag.Parse()
 
