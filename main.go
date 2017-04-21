@@ -36,15 +36,19 @@ func main() {
 
 	//Init logging
 	predictionFrequencyFlag := flag.Int64("pf", 20, "Prediction frequency in seconds")
+	SlidingWindowSizeFlag := flag.Int("slidingwindow", 2048, "Sliding window in seconds- sampling per second")
 
+	PredictionWindowSizeFlag := flag.Int("predictionwindow", 128, "Prediction window in seconds- sampling per second")
 	flag.Parse()
 
 	log.WithFields(logrus.Fields{
-		"pf": *predictionFrequencyFlag,
+		"pf":               *predictionFrequencyFlag,
+		"slidingwindow":    *SlidingWindowSizeFlag,
+		"predictionwindow": *PredictionWindowSizeFlag,
 	}).Infoln("Inputs from command line")
 
-	SlidingWindowSize := 2048                                                    //SlidingWindow
-	PredictionWindowSize := 128                                                  //PredictionWindow
+	SlidingWindowSize := *SlidingWindowSizeFlag                                  //SlidingWindow
+	PredictionWindowSize := *PredictionWindowSizeFlag                            //PredictionWindow
 	predictionFrequency := time.Second * time.Duration(*predictionFrequencyFlag) // in seconds
 	log.Infoln("Prediction Frequency is ", predictionFrequency)
 	DataFetcher := fetcher.NewDataFetcher()
