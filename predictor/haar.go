@@ -1,8 +1,9 @@
 package predictor
 
 import (
-	"fmt"
 	"math"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type HaarPredictionLogic interface {
@@ -37,38 +38,19 @@ type P2 struct {
 }
 
 // Haar ...  pastArray , bin is max numberStates to generate , logic numbers
-func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]float32 {
-	fmt.Println("Max Bins configured for states", bin)
-
-	//var predictionLogic HaarPredictionLogic
-	//
-	// switch logic {
-	// case 1:
-	// 	fmt.Println(" P1 Logic chosen for Haar ")
-	// 	predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
-	// case 2:
-	// 	fmt.Println(" P1 Go Up Logic chosen for Haar ")
-	// 	predictionLogic = P1GoUp{name: "P1 GoUp Logic", numberOfBins: bin}
-	// case 3:
-	// 	fmt.Println(" P2 Logic chosen for Haar ")
-	// 	//predictionLogic = P2{name: "P2 Logic", cpl: 5.0, maxNumberOfBins: bin}
-	// default:
-	// 	fmt.Println("No valid logic chose : Default P1 ")
-	// 	predictionLogic = P1{name: "P1 Logic", numberOfBins: bin}
-	// }
-
-	//Temporary logic usage
+func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *logrus.Logger) [][]float32 {
+	log.Debugln("Max Bins configured for states", bin)
 
 	var goUp = false
 	switch logic {
 	case 1:
-		fmt.Println("P1 Logic chosen ")
+		log.Debugln("P1 Logic chosen ")
 		goUp = false
 	case 2:
-		fmt.Println("P1 Go Up Logic Chosen")
+		log.Debugln("P1 Go Up Logic Chosen")
 		goUp = true
 	default:
-		fmt.Println("No valid logic chosen - Default P1 Logic chosen ")
+		log.Debugln("No valid logic chosen - Default P1 Logic chosen ")
 		goUp = false
 	}
 
@@ -92,9 +74,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 	for len(ApproximateCoefficient) > 1 && scaleNum <= scale {
 		var DetailedCoefficent []float32
 		ApproximateCoefficient, DetailedCoefficent = haarLevel(ApproximateCoefficient)
-		if debug {
-			fmt.Print("\n Haar Level ", scaleNum, "\t -|- \t", ApproximateCoefficient, "\t -|- \t", DetailedCoefficent, "\n")
-		}
+		log.Debugln("\n Haar Level ", scaleNum, "\t -|- \t", ApproximateCoefficient, "\t -|- \t", DetailedCoefficent, "\n")
 
 		stateDeciderD := make([]float32, bin+1)
 
@@ -114,9 +94,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 			stateDeciderD[i] = stateDeciderD[i-1] + diffD
 		}
 
-		if debug {
-			fmt.Println("State decider is: ", stateDeciderD)
-		}
+		log.Debugln("State decider is: ", stateDeciderD)
 
 		/// Original array D transformed to state array containing the state numbers
 		stateArrayD := make([]int, len(DetailedCoefficent))
@@ -125,36 +103,26 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 			stateArrayD[index] = findState(elem, stateDeciderD)
 		}
 
-		if debug {
-			fmt.Println("State array of D is: ", stateArrayD)
-		}
+		log.Debugln("State array of D is: ", stateArrayD)
 
 		/// Predicted States
-		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))), goUp)
-		if debug {
-			fmt.Println("Predicted array of D is ", predictedArray)
-		}
+		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))), goUp, log)
+		log.Debugln("Predicted array of D is ", predictedArray)
 
 		/// Convert States back to Avg between the gaps
-		predictedActualD := convertStatesToValues(predictedArray, scaleMap[scaleNum])
-		if debug {
-			fmt.Println("Predicted Actual array of D is ", predictedActualD)
-		}
+		predictedActualD := convertStatesToValues(predictedArray, scaleMap[scaleNum], log)
+		log.Debugln("Predicted Actual array of D is ", predictedActualD)
 
 		res = append([][]float32{predictedActualD}, res...) // prepend
 
 		//res = append([][]float32{D}, res...) // prepend
 
 		if scaleNum == scale {
-			if debug {
-				fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
-			}
+			log.Debugln("ScaleNum == scale ? ", scale, scaleNum)
 			stateDeciderA := make([]float32, bin+1)
 			stateArrayA := make([]int, len(ApproximateCoefficient))
 			minA, maxA := findMinMax(ApproximateCoefficient)
-			if debug {
-				fmt.Println("Min max A ", minA, ",", maxA)
-			}
+			log.Debugln("Min max A ", minA, ",", maxA)
 			diffA := (maxA - minA) / float32(bin)
 			// index = 0
 
@@ -166,26 +134,20 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 			for index, elem := range ApproximateCoefficient {
 				stateArrayA[index] = findState(elem, stateDeciderA)
 			}
-			if debug {
-				fmt.Println("State decider of A is: ", stateDeciderA)
-				fmt.Println("State array of A in the last scale is: ", stateArrayA)
-			}
+			log.Debugln("State decider of A is: ", stateDeciderA)
+			log.Debugln("State array of A in the last scale is: ", stateArrayA)
 
 			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, bin, 0, goUp)
+			predictedArrayA := predictMarkov(stateArrayA, bin, 0, goUp, log)
 			//float64(scale-scaleNum))))
-			if debug {
-				fmt.Println("Predicted array of A is ", predictedArrayA)
-			}
+			log.Debugln("Predicted array of A is ", predictedArrayA)
 
 			// Min Max A
 			scaleMapA := []float32{minA, maxA, diffA}
 
 			/// Convert States back to Avg between the gaps
-			predictedActualA := convertStatesToValues(predictedArrayA, scaleMapA)
-			if debug {
-				fmt.Println("Predicted Actual array of A is ", predictedActualA)
-			}
+			predictedActualA := convertStatesToValues(predictedArrayA, scaleMapA, log)
+			log.Debugln("Predicted Actual array of A is ", predictedActualA)
 
 			res = append([][]float32{predictedActualA}, res...) // prepend
 
@@ -197,120 +159,12 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int) [][]flo
 
 	return res
 }
-
-/*
-// Haar ...
-func Haar_old(f []float32, scale int) [][]float32 {
-
-	/// Map for the scale and corresponding min,max. This will be used for reconstruction
-	scaleMap := make(map[int][]float32)
-
-	n := int(math.Log2(float64(len(f))))
-	fmt.Println("n ", n)
-	m := int(math.Pow(2, float64(n)))
-	var A []float32 = f[:m]
-	var res [][]float32
-	scaleNum := 1
-
-	for len(A) > 1 && scaleNum <= scale {
-		var D []float32
-		A, D = haar_level(A)
-		fmt.Print("\n Haar Level - ", scaleNum, "---", A, "--", D, "\n")
-
-		// Transform ACoefficient and DCoefficient matrix to timeseries  A and D matrix to
-
-		//A, D = convertHaarCoeeficientToTimeSeries(f, ACoefficient, DCoefficient)
-		bin := 10
-		stateDeciderD := make([]float32, bin+1)
-
-		/// Find min, max
-		minD, maxD := findMinMax(D)
-		diffD := (maxD - minD) / float32(bin)
-
-		/// Add to map
-		scaleMap[scaleNum] = []float32{minD, maxD, diffD}
-
-		/// Calculate endpoints of the intervals which will determine states
-		/// e.g state decider array [a,b,c,d]: State 1 is [a,b), state 2 is [b,c)
-
-		stateDeciderD[0] = minD
-		stateDeciderD[bin] = maxD
-		for i := 1; i < bin; i++ {
-			stateDeciderD[i] = stateDeciderD[i-1] + diffD
-		}
-
-		fmt.Println("State decider is: ", stateDeciderD)
-
-		/// Original array D transformed to state array containing the state numbers
-		stateArrayD := make([]int, len(D))
-
-		for index, elem := range D {
-			stateArrayD[index] = findState(elem, stateDeciderD)
-		}
-
-		fmt.Println("State array of D is: ", stateArrayD)
-
-		/// Predicted States
-		predictedArray := predictMarkov(stateArrayD, bin, int(math.Pow(float64(2), float64(scale-scaleNum))))
-		fmt.Println("Predicted array of D is ", predictedArray)
-
-		/// Convert States back to Avg between the gaps
-		predictedActualD := convertStatesToValues(predictedArray, scaleMap[scaleNum])
-		fmt.Println("Predicted Actual array of D is ", predictedActualD)
-
-		res = append([][]float32{predictedActualD}, res...) // prepend
-
-		//res = append([][]float32{D}, res...) // prepend
-
-		if scaleNum == scale {
-			fmt.Println("ScaleNum == scale ? ", scale, scaleNum)
-			stateDeciderA := make([]float32, bin+1)
-			stateArrayA := make([]int, len(A))
-			minA, maxA := findMinMax(A)
-			fmt.Println("Min max A ", minA, ",", maxA)
-			diffA := (maxA - minA) / float32(bin)
-			// index = 0
-
-			stateDeciderA[0] = minA
-			stateDeciderA[bin] = maxA
-			for i := 1; i < bin; i++ {
-				stateDeciderA[i] = stateDeciderA[i-1] + diffA
-			}
-			for index, elem := range A {
-				stateArrayA[index] = findState(elem, stateDeciderA)
-			}
-			fmt.Println("State decider of A is: ", stateDeciderA)
-			fmt.Println("State array of A in the last scale is: ", stateArrayA)
-
-			/// Predicted States
-			predictedArrayA := predictMarkov(stateArrayA, bin, 0)
-			//float64(scale-scaleNum))))
-			fmt.Println("Predicted array of A is ", predictedArrayA)
-
-			// Min Max A
-			scaleMapA := []float32{minA, maxA, diffA}
-
-			/// Convert States back to Avg between the gaps
-			predictedActualA := convertStatesToValues(predictedArrayA, scaleMapA)
-			fmt.Println("Predicted Actual array of A is ", predictedActualA)
-
-			res = append([][]float32{predictedActualA}, res...) // prepend
-
-		}
-
-		scaleNum++
-	}
-	// res = append([][]float32{A}, res...) // prepend
-
-	return res
-}
-*/
 
 // Converts States to values by converting int array to float32 array taking average between gaps
-func convertStatesToValues(predictedArray []int, minMaxDiff []float32) []float32 {
+func convertStatesToValues(predictedArray []int, minMaxDiff []float32, log *logrus.Logger) []float32 {
 	convertedArray := make([]float32, len(predictedArray))
 	if len(minMaxDiff) != 3 {
-		fmt.Println("Warn: Looks some issue in convertStatesToValues")
+		log.Errorln("Warn: Looks some issue in convertStatesToValues")
 	}
 	low := minMaxDiff[0]
 	//max := minMaxDiff[1]

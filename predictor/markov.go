@@ -1,12 +1,13 @@
 package predictor
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
-func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool) (res []int) {
+func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool, log *logrus.Logger) (res []int) {
 
 	// states := 10
 
@@ -17,10 +18,8 @@ func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool) (r
 
 	n := len(arr)
 
-	if debug {
-		fmt.Print(arr, "\n")
-		fmt.Print(n, "\n")
-	}
+	log.Debugln(arr)
+	log.Debugln(n)
 
 	var p [][]float32
 	for i := 0; i <= numStates; i++ {
@@ -44,17 +43,16 @@ func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool) (r
 		}
 
 	}
-	if debug {
-		fmt.Println("Transition matrix - ", p)
-	}
+	log.Debugln("Transition matrix - ", p)
+
 	var results []int // Declaring
 
-	//fmt.Println("Transition matrix", p)
+	//log.Debugln("Transition matrix", p)
 	//Initializing
 	if predictionWindow == 0 {
 		results = make([]int, 1)
 		lastElement := arr[len(arr)-1]
-		results[0] = predictNext(lastElement, p, 0, goUp)
+		results[0] = predictNext(lastElement, p, 0, goUp, log)
 
 	} else {
 		results = make([]int, predictionWindow)
@@ -62,16 +60,16 @@ func predictMarkov(arr []int, numStates int, predictionWindow int, goUp bool) (r
 
 	lastElement := arr[len(arr)-1]
 	for i := 0; i < predictionWindow; i++ {
-		results[i] = predictNext(lastElement, p, predictionWindow, goUp)
+		results[i] = predictNext(lastElement, p, predictionWindow, goUp, log)
 
 		lastElement = results[i]
 	}
-	// fmt.Print(p, "\n")
+	// log.Debugln(p, "\n")
 	return results
 
 }
 
-func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool) int {
+func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool, log *logrus.Logger) int {
 
 	var maxIndices []int
 	max := transitionMatrix[lastElement][1] // since n+1 by n+1 matrix
@@ -84,19 +82,16 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool
 	}
 	/// Special case all zeros
 	if D == 0 || max == 0 {
-		if debug {
-			fmt.Println("Special case where you are in predictNext and all probabilities zero in prediction matrix ")
-		}
+		log.Debugln("Special case where you are in predictNext and all probabilities zero in prediction matrix ")
 
 		// Special case when predictNext is on last element
 		if lastElement == (len(transitionMatrix[1]) - 1) {
-			if debug {
-				fmt.Println("predictNext for last state, go to random state to avoid predicting last state")
-			}
+			log.Debugln("predictNext for last state, go to random state to avoid predicting last state")
+
 			return random(1, len(transitionMatrix[1])) // to escape from always predicting Last state
 		}
 
-		//fmt.Print("\n-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``---D is possibily 0 ----- \n")
+		//log.Debugln("\n-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``---D is possibily 0 ----- \n")
 
 		// Always send Higher values ( so no dip )
 		if goUp {
@@ -116,9 +111,7 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool
 
 	//return maxIndices[random(0, len(maxIndices))]
 	if len(maxIndices) > 1 {
-		if debug {
-			fmt.Println(" For last element ", lastElement, "--------=========Many probabilities same==============-------------", maxIndices)
-		}
+		log.Debugln(" For last element ", lastElement, "--------=========Many probabilities same==============-------------", maxIndices)
 	}
 	return maxIndices[random(0, len(maxIndices))]
 }
@@ -129,10 +122,8 @@ func predictNext(lastElement int, transitionMatrix [][]float32, D int, goUp bool
 
 func random(min, max int) int {
 
-	if !debug {
-		//Use rand.Seed() when in production for vvariable output
-		rand.Seed(time.Now().Unix())
-	}
+	//Use rand.Seed() when in production for vvariable output
+	rand.Seed(time.Now().Unix())
 
 	return rand.Intn(max-min) + min
 }
@@ -141,6 +132,6 @@ func sumOfAllElements(array []float32) (sum float32) {
 	for _, i := range array {
 		sum += i
 	}
-	//fmt.Print("Sum",sum)
+	//log.Debugln("Sum",sum)
 	return
 }

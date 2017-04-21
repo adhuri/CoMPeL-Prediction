@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -40,7 +39,7 @@ func TestAccuracyForPredictedData(t *testing.T) {
 	startTime := endTime.Add(-1 * time.Second * slidingWindowDuration)
 
 	for i := 0; i < numberOfSlidingWindows; i++ {
-		fmt.Println("For Start time ", startTime, "\n End Time ", endTime)
+		log.Infoln("For Start time ", startTime, "\n End Time ", endTime)
 
 		res1, err := getResults(TestIp, TestContainer, "cpu", "cpu_haar_P1_goup", slidingWindow, startTime, endTime)
 		if err != nil {
@@ -77,7 +76,7 @@ func getResults(ip string, containerName string, metric string, predictedMetric 
 	}
 
 	accuracyThreshold := float32(1)
-	res.withinThresholdEstimatePercent, res.underThresholdEstimatePercent, res.overThresholdEstimatePercent, res.rmseOverThresholdEstimate, res.rmseUnderThresholdEstimate, err = predictor.AccuracyChecker(actualData, predictedData, len(actualData), accuracyThreshold)
+	res.withinThresholdEstimatePercent, res.underThresholdEstimatePercent, res.overThresholdEstimatePercent, res.rmseOverThresholdEstimate, res.rmseUnderThresholdEstimate, err = predictor.AccuracyChecker(actualData, predictedData, len(actualData), accuracyThreshold, log)
 	if err != nil {
 		return res, errors.New("Accuracy checker failed " + err.Error())
 	}
@@ -88,7 +87,7 @@ func getResults(ip string, containerName string, metric string, predictedMetric 
 }
 
 func resultPrinter(r Results) {
-	fmt.Println("-- Results for ", r.name)
+	log.Infoln("-- Results for ", r.name)
 	var startTimestampArray []int64
 	var withinThresholdEstimatePercentArray []float32
 	var overThresholdEstimatePercentArray []float32
@@ -105,13 +104,13 @@ func resultPrinter(r Results) {
 		rmseUnderThresholdEstimateArray = append([]float32{el.rmseUnderThresholdEstimate}, rmseUnderThresholdEstimateArray...)
 
 	}
-	fmt.Println("----------------------------------------------------------------------------")
-	fmt.Println("startTimestampArray ", startTimestampArray)
+	log.Infoln("----------------------------------------------------------------------------")
+	log.Debugln("startTimestampArray ", startTimestampArray)
 
-	fmt.Println("withinThresholdEstimatePercentArray ", withinThresholdEstimatePercentArray)
-	fmt.Println("overThresholdEstimatePercentArray", overThresholdEstimatePercentArray)
-	fmt.Println("underThresholdEstimatePercentArray", underThresholdEstimatePercentArray)
-	fmt.Println("rmseOverThresholdEstimateArray", rmseOverThresholdEstimateArray)
-	fmt.Println("rmseUnderThresholdEstimateArray", rmseUnderThresholdEstimateArray)
+	log.Infoln("withinThresholdEstimatePercentArray ", withinThresholdEstimatePercentArray)
+	log.Infoln("overThresholdEstimatePercentArray", overThresholdEstimatePercentArray)
+	log.Infoln("underThresholdEstimatePercentArray", underThresholdEstimatePercentArray)
+	log.Infoln("rmseOverThresholdEstimateArray", rmseOverThresholdEstimateArray)
+	log.Infoln("rmseUnderThresholdEstimateArray", rmseUnderThresholdEstimateArray)
 
 }

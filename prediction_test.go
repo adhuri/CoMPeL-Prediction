@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	predictor "github.com/adhuri/Compel-Prediction/predictor"
@@ -13,8 +12,6 @@ type TestData struct {
 	actualDemand []float32
 	cpu          []float32
 }
-
-var Debug = true
 
 func newTestData() *TestData {
 
@@ -48,14 +45,12 @@ func TestPredictionEquidistantStates(t *testing.T) {
 
 	for logicLoop := 30; logicLoop <= 30; logicLoop = logicLoop + 10 { // only one logic as of now
 		bin := logicLoop
-		predictedArray, err := predictor.Predictor(&haar, sampleData.cpu, bin, 1)
+		predictedArray, err := predictor.Predictor(&haar, sampleData.cpu, bin, 1, log)
 		if err != nil {
 			t.Error("\nError received from Predictor ", err)
 		}
 
-		if Debug {
-			fmt.Print("\nPredicted Array ", predictedArray, "\n")
-		}
+		log.Debugln("\nPredicted Array ", predictedArray, "\n")
 
 		AccuracyPrinter(sampleData.actualDemand, predictedArray, sampleData.W, t)
 
@@ -70,14 +65,12 @@ func TestPredictionEquidistantStatesGoUp(t *testing.T) {
 
 	for logicLoop := 30; logicLoop <= 30; logicLoop = logicLoop + 10 { // only one logic as of now
 		bin := logicLoop
-		predictedArray, err := predictor.Predictor(&haar, sampleData.cpu, bin, 2)
+		predictedArray, err := predictor.Predictor(&haar, sampleData.cpu, bin, 2, log)
 		if err != nil {
 			t.Error("\nError received from Predictor ", err)
 		}
 
-		if Debug {
-			fmt.Print("\nPredicted Array ", predictedArray, "\n")
-		}
+		log.Debugln("\nPredicted Array ", predictedArray, "\n")
 
 		AccuracyPrinter(sampleData.actualDemand, predictedArray, sampleData.W, t)
 	}
@@ -90,14 +83,12 @@ func TestPredictionMax(t *testing.T) {
 	max := predictor.MaxPredict{SlidingWindow: sampleData.D, PredictionWindow: sampleData.W}
 
 	bin := 1
-	predictedArray, err := predictor.Predictor(&max, sampleData.cpu, bin, 1)
+	predictedArray, err := predictor.Predictor(&max, sampleData.cpu, bin, 1, log)
 	if err != nil {
 		t.Error("\nError received from Predictor ", err)
 	}
 
-	if Debug {
-		fmt.Print("\nPredicted Array ", predictedArray, "\n")
-	}
+	log.Debugln("\nPredicted Array ", predictedArray, "\n")
 
 	AccuracyPrinter(sampleData.actualDemand, predictedArray, sampleData.W, t)
 }
@@ -105,10 +96,10 @@ func TestPredictionMax(t *testing.T) {
 func AccuracyPrinter(actualDemand []float32, predictedArray []float32, W int, t *testing.T) {
 	// Accuracy Checker to find +- accuracy Threshold
 	accuracyThreshold := float32(1)
-	withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, rmseOverEstimate, rmseUnderEstimate, err := predictor.AccuracyChecker(actualDemand, predictedArray, W, accuracyThreshold)
+	withingThresholdEstimatePercentage, underThresholdEstimatePercentage, overThresholdEstimatePercentage, rmseOverEstimate, rmseUnderEstimate, err := predictor.AccuracyChecker(actualDemand, predictedArray, W, accuracyThreshold, log)
 	if err != nil {
 		t.Error("Accuracy checker failed ", err)
 	}
-	fmt.Print("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\n RMSE Over Estimate ", rmseOverEstimate, "\n RMSE Under Estimate ", rmseUnderEstimate, "\n\n")
+	log.Infoln("------ AccuracyChecker ------- \n ", "Within Threshold Estimate % ", withingThresholdEstimatePercentage, "\n Over Threshold Estimate %", overThresholdEstimatePercentage, "\nUnder Threshold Estimate %", underThresholdEstimatePercentage, "\n RMSE Over Estimate ", rmseOverEstimate, "\n RMSE Under Estimate ", rmseUnderEstimate, "\n\n")
 
 }

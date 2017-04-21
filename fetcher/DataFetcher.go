@@ -3,7 +3,6 @@ package fetcher
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"sync"
 
 	monitorProtocol "github.com/adhuri/Compel-Monitoring/protocol"
@@ -206,8 +205,8 @@ func (dataFetcher *DataFetcher) GetPredictedData(agentIP string, containerId str
 		}
 
 	}
-	fmt.Println("start,end", startTimeStamp, endTimeStamp)
-	fmt.Println("Oldest ", oldestTimesStamp, "\n latest ", latestTimesStamp)
+	//fmt.Println("start,end", startTimeStamp, endTimeStamp)
+	//fmt.Println("Oldest ", oldestTimesStamp, "\n latest ", latestTimesStamp)
 
 	var points []float32
 	for i := startTimeStamp; i <= endTimeStamp; i++ {
