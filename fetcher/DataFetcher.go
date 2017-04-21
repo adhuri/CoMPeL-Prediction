@@ -35,7 +35,8 @@ func (dataFetcher *DataFetcher) GetAgentInformation(monitoringServer, restPort s
 	return &queryResponse, nil
 }
 
-func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, containerId string, metricType string, time int64, numberOfPoints int) ([]float32, int64) {
+func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, containerId string, metricType string, timestamp int64, numberOfPoints int, log *logrus.Logger) ([]float32, int64) {
+	defer utils.TimeTrack(time.Now(), "DataFetcher.go-GetMetricDataForContainer() - Fetch data from db ", log)
 
 	dataPoints := getData(agentIp, containerId, metricType)
 	dataPointMap := make(map[int64]float32)
@@ -58,7 +59,7 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 	}
 
 	var points []float32
-	for i := oldestTimesStamp; i <= time; i += 1 {
+	for i := oldestTimesStamp; i <= timestamp; i += 1 {
 		// if there is break in time series, aligning will be impossible with 2 seconds sampling
 		if value, present := dataPointMap[i]; present {
 			points = append(points, value)
@@ -81,7 +82,7 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		// Trim the slice if we have more points than asked for
 		numberOfExtraPoints := len(points) - numberOfPoints
 		//fmt.Println(len(points[numberOfExtraPoints:]))
-		return points[numberOfExtraPoints:], time
+		return points[numberOfExtraPoints:], timestamp
 	} else if len(points) < numberOfPoints {
 		// If points are less than required then pad 0 at the start
 		var remainingPoints []float32
@@ -92,11 +93,11 @@ func (dataFetcher *DataFetcher) GetMetricDataForContainer(agentIp string, contai
 		remainingPoints = append(remainingPoints, points...)
 
 		//fmt.Println(len(remainingPoints))
-		return remainingPoints, time
+		return remainingPoints, timestamp
 
 	}
 
-	return points, time
+	return points, timestamp
 
 }
 

@@ -21,7 +21,7 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 		log.Debugln("For predictor ", predictor)
 		//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
 		timestamp = time.Now().Unix()
-		fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize)
+		fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize, log)
 		log.Debugln("Fetched Array for metric", metric, "-", fetchedArray)
 
 		predictedArray = []float32{}
