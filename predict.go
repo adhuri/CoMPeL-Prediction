@@ -20,7 +20,7 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 	fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize, log)
 	log.Debugln("Fetched Array for metric", metric, "-", fetchedArray)
 
-	predictors := []string{"haar", "haargoup", "max"}
+	predictors := []string{"max", "haar", "haargoup"} // The last one is sent for Migration
 
 	for _, predictor := range predictors {
 		log.Infoln("Predictor : ", predictor)
