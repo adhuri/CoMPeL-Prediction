@@ -13,16 +13,18 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 
 	log.Infoln("-> Predicting ", metric, " for Agent:Container ", agentIP, ":", containerID)
 
-	predictors := []string{"haar", "haargoup", "max"}
 	var predictedArray []float32
 	var timestamp int64
-	for _, predictor := range predictors {
+	//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
+	timestamp = time.Now().Unix()
+	fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize, log)
+	log.Debugln("Fetched Array for metric", metric, "-", fetchedArray)
 
+	predictors := []string{"haar", "haargoup", "max"}
+
+	for _, predictor := range predictors {
+		log.Infoln("Predictor : ", predictor)
 		log.Debugln("For predictor ", predictor)
-		//agentIp string, containerId string, metricType string, time int64, numberOfPoints int) returns fetched array and time int64
-		timestamp = time.Now().Unix()
-		fetchedArray, alignedTimestamp := DataFetcher.GetMetricDataForContainer(agentIP, containerID, metric, timestamp, SlidingWindowSize, log)
-		log.Debugln("Fetched Array for metric", metric, "-", fetchedArray)
 
 		predictedArray = []float32{}
 		if predictor == "haar" {

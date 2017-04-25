@@ -25,7 +25,7 @@ type MaxPredict struct {
 
 // Predictor Funcion to predict which takes input Prediction Logic
 func Predictor(p PredictionLogic, pastArray []float32, bin int, logic int, log *logrus.Logger) (predictedArray []float32, err error) {
-	log.Infoln("--> Predictor Name : ", p.GetPredictorName())
+	log.Debugln("--> Predictor Name : ", p.GetPredictorName())
 	predictedArray, err = p.Predict(pastArray, bin, logic, log)
 	if err != nil {
 		return
@@ -72,5 +72,5 @@ func valueRaiser(result []float32, valueRaisedPercentage float32, log *logrus.Lo
 		// }
 
 	}
-	log.Infoln("Value raised in predicted by ", valueRaisedPercentage, "%")
+	log.Debugln("Value raised in predicted by ", valueRaisedPercentage, "%")
 }

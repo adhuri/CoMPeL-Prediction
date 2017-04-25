@@ -60,7 +60,7 @@ func main() {
 		case <-predictionTimer:
 			{
 				predictionTime := time.Now()
-				log.Infoln("Predicting for time : ", predictionTime.Format("2006-01-02 15:04:05"), " , Unix Time : ", predictionTime.Unix(), "\n")
+				log.Infoln("Predicting for time : ", predictionTime.Format("2006-01-02 15:04:05"), " , Unix Time : ", predictionTime.Unix())
 
 				ContainerInfo, err := DataFetcher.GetAgentInformation("127.0.0.1", "9091")
 				if err != nil {

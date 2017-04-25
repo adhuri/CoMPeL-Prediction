@@ -84,15 +84,15 @@ func isPowerOfTwo(num int) bool {
 
 // Haar ...  pastArray , bin is max numberStates to generate , logic numbers
 func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *logrus.Logger) [][]float32 {
-	log.Infoln("Max Bins configured for states", bin)
+	log.Debugln("Max Bins configured for states", bin)
 
 	var goUp = false
 	switch logic {
 	case 1:
-		log.Infoln("P1 Logic chosen ")
+		log.Debugln("P1 Logic chosen ")
 		goUp = false
 	case 2:
-		log.Infoln("P1 Go Up Logic Chosen")
+		log.Debugln("P1 Go Up Logic Chosen")
 		goUp = true
 	default:
 		log.Debugln("No valid logic chosen - Default P1 Logic chosen ")
@@ -100,7 +100,7 @@ func Haar(pastArray []float32, predictionWindow int, bin int, logic int, log *lo
 	}
 
 	scale := int(math.Log2(float64(predictionWindow)))
-	log.Infoln("Haar wavelets scales ", scale)
+	log.Debugln("Haar wavelets scales ", scale)
 
 	// Logic decider
 
