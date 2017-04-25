@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/adhuri/Compel-Prediction/fetcher"
 	predictor "github.com/adhuri/Compel-Prediction/predictor"
 	"github.com/adhuri/Compel-Prediction/utils"
@@ -46,15 +47,18 @@ func PredictAndStore(DataFetcher *fetcher.DataFetcher, agentIP string, container
 
 		log.Debugln("Storing ", predictor, " predicted array  back to db ")
 		//SavePredictedData(agentIP string, containerId string, metric string, predictedValues []float32, startTimeStamp int64) {
-
-		err1 := DataFetcher.SavePredictedData(agentIP, containerID, metric+predictor, predictedArray, alignedTimestamp, log)
-		if err1 != nil {
-			log.Errorln("ERROR: Could not store predicted data using SavePredictedData for predictor ", predictor)
-		} else {
-			log.Debugln("Stored predicted array to database")
-		}
+		go dataStoreWrapper(DataFetcher, agentIP, containerID, metric+predictor, predictedArray, alignedTimestamp, log)
 	}
 	return predictedArray, timestamp
+}
+
+func dataStoreWrapper(DataFetcher *fetcher.DataFetcher, agentIP string, containerID string, metricPredictor string, predictedArray []float32, alignedTimestamp int64, log *logrus.Logger) {
+	err1 := DataFetcher.SavePredictedData(agentIP, containerID, metricPredictor, predictedArray, alignedTimestamp, log)
+	if err1 != nil {
+		log.Errorln("ERROR: Could not store predicted data using SavePredictedData for predictor ", metricPredictor)
+	} else {
+		log.Debugln("Stored predicted array to database")
+	}
 }
 
 func haarPrediction(SlidingWindowSize int, PredictionWindowSize int, fetchedData []float32, logic int) (predictedArray []float32) {
